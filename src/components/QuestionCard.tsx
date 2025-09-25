@@ -8,6 +8,7 @@ type Props = {
   onChange: (val: "a" | "b" | "c" | "d") => void;
   disabled?: boolean;
   correct: "a" | "b" | "c" | "d";
+  revealCorrectInline?: boolean;
 };
 
 export default function QuestionCard({
@@ -18,9 +19,39 @@ export default function QuestionCard({
   onChange,
   disabled,
   correct,
+  revealCorrectInline = false,
 }: Props) {
   const get = (k: "a" | "b" | "c" | "d") =>
     (options[k] ?? "").toString() || "[missing]";
+  const baseBtnStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    width: "100%",
+    padding: "10px 12px",
+    borderRadius: 8,
+    border: "1px solid #d0d7de",
+    background: "#f6f8fa",
+    color: "#24292f",
+    cursor: disabled ? "not-allowed" : "pointer",
+  };
+  const selectedStyle: React.CSSProperties = {
+    ...baseBtnStyle,
+    background: "#0366d6",
+    borderColor: "#0366d6",
+    color: "#ffffff",
+  };
+  const keyStyle: React.CSSProperties = {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    background: "rgba(0,0,0,0.1)",
+    color: "inherit",
+    fontWeight: 600,
+  };
   return (
     <fieldset
       className="card"
@@ -31,7 +62,9 @@ export default function QuestionCard({
       <legend id="q-legend">
         <strong>{category}</strong> — {prompt}
       </legend>
-      <div style={{color: "#ffff"}}>Correct answer:{correct.toUpperCase()}</div>
+      {revealCorrectInline && (
+        <div style={{color: "#ffff"}}>Correct answer:{correct.toUpperCase()}</div>
+      )}
       <div role="radiogroup" aria-label="Answers">
         {(["a", "b", "c", "d"] as const).map((k) => (
           <label key={k} style={{ display: "block", marginTop: 8 }}>
@@ -42,13 +75,16 @@ export default function QuestionCard({
               checked={value === k}
               onChange={() => onChange(k)}
               aria-checked={value === k}
-            />{" "}
-            <span
-              className={value === k ? "selected" : undefined}
-              id={`opt-${k}`}
+              style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 0, height: 0 }}
+            />
+            <div
+              role="button"
+              aria-pressed={value === k}
+              style={value === k ? selectedStyle : baseBtnStyle}
             >
-              {k.toUpperCase()}. {get(k)}
-            </span>
+              <span aria-hidden="true" style={keyStyle}>{k.toUpperCase()}</span>
+              <span id={`opt-${k}`}>{get(k)}</span>
+            </div>
           </label>
         ))}
       </div>

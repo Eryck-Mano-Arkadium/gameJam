@@ -1,8 +1,17 @@
-export default function SpeedPage() {
-  return (
+import dynamic from 'next/dynamic';
+
+export const metadata = { title: 'Streak Trivia – Speedrun' };
+
+const SpeedClient = dynamic(() => import('./SpeedClient'), {
+  ssr: false,
+  loading: () => (
     <section className="container">
-      <h1>Speed Run</h1>
-      <p>Coming soon. (Will reuse the same components & services.)</p>
+      <h1>Speedrun</h1>
+      <p>Loading…</p>
     </section>
-  );
+  ),
+});
+
+export default function SpeedPage() {
+  return <SpeedClient />;
 }
