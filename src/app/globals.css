@@ -1,12 +1,12 @@
-/* Minimal hooks; visual design intentionally simple */
-.nav-link { text-decoration: none; color: #0366d6; }
-.nav-link:hover { text-decoration: underline; }
-.container { max-width: 800px; margin: 0 auto; }
+html, body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+.container { max-width: 1100px; margin: 0 auto; }
+.btn {
+  display: inline-block; padding: 10px 14px; border-radius: 8px;
+  border: 1px solid #ccc; background: #fff; cursor: pointer;
+  text-decoration: none; color: inherit;
+}
+.card {
+  padding: 16px; border: 1px solid #e5e5e5; border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04); background: #fff;
+}
 .row { display: flex; gap: 16px; flex-wrap: wrap; }
-.card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; }
-.btn { border: 1px solid #bbb; padding: 8px 12px; border-radius: 6px; background: #fafafa; }
-.btn:focus { outline: 3px solid #9ecbff; outline-offset: 2px; }
-.selected { border-color: #0366d6; }
-.table { width: 100%; border-collapse: collapse; }
-.table th, .table td { border-bottom: 1px solid #eee; padding: 8px; text-align: left; }
-.visually-hidden { position: absolute; left: -9999px; }

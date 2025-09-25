@@ -1,15 +1,14 @@
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 
-export const metadata = { title: 'Streak Trivia – Infinity' };
+export const metadata = { title: "Streak Trivia – Infinity" };
 
-// 👇 Load the client component only on the client (no SSR → no hydration)
-const InfinityClient = dynamic(() => import('./InfinityClient'), {
+const InfinityClient = dynamic(() => import("./InfinityClient"), {
   ssr: false,
   loading: () => (
-    <section className="container">
+    <main className="container" style={{ padding: "32px 20px" }}>
       <h1>Infinity Mode</h1>
       <p>Loading…</p>
-    </section>
+    </main>
   ),
 });
 

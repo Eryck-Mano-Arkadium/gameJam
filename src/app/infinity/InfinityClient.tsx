@@ -1,3 +1,4 @@
+// src/app/infinity/InfinityClient.tsx
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -18,14 +19,16 @@ const ps = new PlayerService();
 type RoundAnswer = { roundId: number; choice?: "a" | "b" | "c" | "d" };
 
 export default function InfinityClient() {
-  // Hooks (always called; client-only now)
   const clock = useClock();
   const audio = useAudio();
   const { submit, recordsForRound } = useLeaderboard();
 
-  // It’s safe to read localStorage on the first render now (no SSR)
+  // load from storage immediately (client-only page)
   const [name, setName] = useState(() => ps.getName() ?? "");
   const [streak, setStreak] = useState<number>(() => ps.getStreak());
+  const [bestStreak, setBestStreak] = useState<number>(() =>
+    ps.getBestStreak()
+  );
   const [streakReachedAt, setStreakReachedAt] = useState<
     Record<number, number>
   >(() => ps.getStreakTimestamps());
@@ -38,14 +41,12 @@ export default function InfinityClient() {
   const roundId = info.roundId;
   const question = useMemo(() => qs.getQuestionByRound(roundId), [roundId]);
 
-  // Reset selection at start of QUESTION phase for a new round
   useEffect(() => {
     if (info.phase === "QUESTION" && answer.roundId !== roundId) {
       setAnswer({ roundId });
     }
   }, [info.phase, roundId]);
 
-  // Phase transitions: compute correctness, update streaks, submit leaderboard
   useEffect(() => {
     setLiveMsg(
       `Phase: ${info.phase}. ${Math.ceil(
@@ -61,9 +62,14 @@ export default function InfinityClient() {
       setStreak(nextStreak);
       ps.setStreak(nextStreak);
 
+      // 🔥 update personal best
+      if (nextStreak > bestStreak) {
+        setBestStreak(nextStreak);
+        ps.setBestStreak(nextStreak);
+      }
+
       if (isCorrect && !streakReachedAt[nextStreak]) {
-        // deterministic: leaderboard phase start time for this round
-        const lbStart = info.roundStartMs + 20000 + 5000;
+        const lbStart = info.roundStartMs + 20000 + 5000; // 20s + 5s
         const updated = { ...streakReachedAt, [nextStreak]: lbStart };
         setStreakReachedAt(updated);
         ps.setStreakTimestamps(updated);
@@ -84,11 +90,11 @@ export default function InfinityClient() {
     question.correct,
     name,
     streak,
+    bestStreak,
     streakReachedAt,
     submit,
   ]);
 
-  // Persist name when it changes
   useEffect(() => {
     if (name && ps.getName() !== name) ps.setName(name);
   }, [name]);
@@ -125,7 +131,6 @@ export default function InfinityClient() {
           <p>
             <strong>Phase:</strong> {info.phase}
           </p>
-
           <Countdown
             startTs={info.phaseStartMs}
             endTs={info.phaseEndMs}
@@ -154,7 +159,6 @@ export default function InfinityClient() {
               correct={question.correct}
             />
           )}
-
           {info.phase === "REVEAL" && (
             <RevealPanel
               category={question.category}
@@ -164,12 +168,12 @@ export default function InfinityClient() {
               currentStreak={streak}
             />
           )}
-
           {info.phase === "LEADERBOARD" && (
             <Leaderboard
               roundId={roundId}
               youName={name}
               youStreak={streak}
+              youBestStreak={bestStreak}
               records={recordsForRound(roundId)}
             />
           )}
