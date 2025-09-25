@@ -1,0 +1,1 @@
+# Streak Trivia (MVP scaffold)
