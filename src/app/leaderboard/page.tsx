@@ -11,10 +11,12 @@ export default function LeaderboardPage() {
   const { currentRoundId, recordsForRound } = useLeaderboard();
   const [name, setName] = useState(ps.getName() ?? '');
   const [streak, setStreak] = useState(ps.getStreak());
+  const [best, setBest] = useState(ps.getBestStreak());
 
   useEffect(() => {
     setName(ps.getName() ?? '');
     setStreak(ps.getStreak());
+    setBest(ps.getBestStreak());
   }, []);
 
   return (
@@ -25,6 +27,7 @@ export default function LeaderboardPage() {
         records={recordsForRound(currentRoundId())}
         youName={name}
         youStreak={streak}
+        youBestStreak={best}
       />
     </section>
   );
