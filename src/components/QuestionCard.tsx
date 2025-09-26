@@ -30,7 +30,9 @@ export default function QuestionCard({
     width: "100%",
     padding: "10px 12px",
     borderRadius: 8,
-    border: "1px solid #d0d7de",
+    borderWidth: 1,
+    borderStyle: "solid",
+    borderColor: "#d0d7de",
     background: "#f6f8fa",
     color: "#24292f",
     cursor: disabled ? "not-allowed" : "pointer",
@@ -38,6 +40,8 @@ export default function QuestionCard({
   const selectedStyle: React.CSSProperties = {
     ...baseBtnStyle,
     background: "#0366d6",
+    borderWidth: 1,
+    borderStyle: "solid",
     borderColor: "#0366d6",
     color: "#ffffff",
   };

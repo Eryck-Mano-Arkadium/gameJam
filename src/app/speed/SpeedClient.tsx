@@ -112,9 +112,9 @@ export default function SpeedClient({
   return (
     <section className="container">
       <h1>Speedrun</h1>
-
-      {!finished ? (
-        <>
+      <div className="row">
+        <div className="card" style={{ flex: 1, minWidth: 320 }}>
+          <h2>Round</h2>
           <Countdown
             startTs={startTs}
             endTs={endTs}
@@ -122,13 +122,15 @@ export default function SpeedClient({
             warnAt={5}
             onAnnounce={setMessage}
           />
-          <div style={{ marginTop: 12 }}>
-            <p>
-              Score: <strong>{score}</strong> • High score:{" "}
-              <strong>{highScore}</strong>
-            </p>
-          </div>
-          <div style={{ marginTop: 12 }}>
+          <p style={{ marginTop: 8 }}>
+            <strong>Score:</strong> {score}
+          </p>
+          <p>
+            <strong>High score:</strong> {highScore}
+          </p>
+        </div>
+        <div className="card" style={{ flex: 2, minWidth: 320 }}>
+          {!finished ? (
             <QuestionCard
               category={question.category}
               prompt={question.question}
@@ -144,22 +146,16 @@ export default function SpeedClient({
               correct={question.correct}
               revealCorrectInline={showAnswer}
             />
-          </div>
-          {/* No submit button in speedrun; selection advances automatically */}
-        </>
-      ) : (
-        <div className="card" aria-live="polite" aria-atomic="true">
-          <p>Time is up!</p>
-          <p>
-            Your final score: <strong>{score}</strong>
-          </p>
-          <p>
-            High score: <strong>{highScore}</strong>
-          </p>
-          <p>Leaderboard coming soon.</p>
+          ) : (
+            <div aria-live="polite" aria-atomic="true">
+              <p>Time is up!</p>
+              <p>Your final score: <strong>{score}</strong></p>
+              <p>High score: <strong>{highScore}</strong></p>
+              <p>Leaderboard coming soon.</p>
+            </div>
+          )}
         </div>
-      )}
-
+      </div>
       <LiveRegion message={message} />
     </section>
   );
