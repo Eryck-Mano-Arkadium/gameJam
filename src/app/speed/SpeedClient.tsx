@@ -11,6 +11,7 @@ import { QuestionService } from "@/services/questions/QuestionService";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useSpeedLeaderboard } from "@/hooks/useSpeedLeaderboard";
 import { PlayerService } from "@/services/player/PlayerService";
+import { audioService } from "@/services/audio/AudioService";
 import type { Route } from "next";
 import * as S from "./speed.css";
 
@@ -113,11 +114,13 @@ export default function SpeedClient({
         const applied = cfg.pointsCorrect; // always positive
         addScore(applied);
         setMessage(`Correct! +${applied} points.`);
+        audioService.playCorrect();
       } else {
         // negative delta, but don't go below 0
         const applied = Math.max(cfg.pointsWrong, -score); // e.g., -20, or -10, or 0
         addScore(applied);
         setMessage(`Wrong. ${applied >= 0 ? `+${applied}` : applied} points.`);
+        audioService.playWrong();
       }
 
       setChoice(undefined);

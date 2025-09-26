@@ -15,6 +15,7 @@ import { PlayerService } from "@/services/player/PlayerService";
 import { useDailyLeaderboard } from "@/hooks/useDailyLeaderboard";
 import DailyLeaderboard from "@/components/DailyLeaderboard";
 import * as S from "./daily.css";
+import { audioService } from "@/services/audio/AudioService";
 
 const svc = new DailyService();
 const ps = new PlayerService();
@@ -111,8 +112,10 @@ export default function DailyClient({
       gained = scoreForElapsed(elapsedMs, cfg);
       setScore((s) => s + gained);
       setMessage(`Correct! +${gained} points`);
+      audioService.playCorrect();
     } else {
       setMessage(`Wrong. +0 points`);
+      audioService.playWrong();
     }
 
     if (idx + 1 < questions.length) {

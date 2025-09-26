@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useClock } from "@/hooks/useClock";
-import { useAudio } from "@/hooks/useAudio";
+import { audioService } from "@/services/audio/AudioService";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
 import Countdown from "@/components/Countdown";
 import QuestionCard from "@/components/QuestionCard";
@@ -24,7 +24,6 @@ type RoundAnswer = { roundId: number; choice?: "a" | "b" | "c" | "d" };
 export default function InfinityClient() {
   const searchParams = useSearchParams();
   const clock = useClock();
-  const audio = useAudio();
   const { submit, recordsForRound } = useLeaderboard();
 
   // load from storage immediately (client-only page)
@@ -103,6 +102,11 @@ export default function InfinityClient() {
       lastRoundHandled.current = roundId;
 
       const isCorrect = answer.choice === question.correct;
+      if (isCorrect) {
+        audioService.playCorrect();
+      } else if (answer.choice) {
+        audioService.playWrong();
+      }
       const nextStreak = isCorrect ? streak + 1 : 0;
       setStreak(nextStreak);
       ps.setStreak(nextStreak);
@@ -219,7 +223,6 @@ export default function InfinityClient() {
             endTs={info.phaseEndMs}
             nowFn={clock.now}
             warnAt={5}
-            onWarn={() => audio.tick()}
             onAnnounce={(text) => setLiveMsg(text)}
             variant="timebar"
             fillMode="remaining"
