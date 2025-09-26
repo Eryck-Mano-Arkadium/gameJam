@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import QuestionCard from "@/components/QuestionCard";
 // import LiveRegion from "@/components/LiveRegion"; // optional
 import { DailyService } from "@/services/daily/DailyService";
+import { resolveHref } from "@/utils/nav";
 import {
   DEFAULT_SCORE,
   scoreForElapsed,
@@ -144,6 +145,8 @@ export default function DailyClient({
       <section className="container">
         <h1>Daily Challenge</h1>
         <p>Redirecting…</p>
+
+        
       </section>
     );
   }

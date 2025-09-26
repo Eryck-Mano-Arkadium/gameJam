@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PlayerService } from "@/services/player/PlayerService";
+import { navigate } from "@/utils/nav";
 
 const ps = new PlayerService();
 
@@ -26,7 +27,7 @@ export default function NameForm() {
         const trimmed = name.trim();
         if (!trimmed) return;
         ps.setName(trimmed);
-        router.push("/infinity");
+        navigate(router as any, "/infinity");
       }}
       aria-labelledby="name-form-title"
     >

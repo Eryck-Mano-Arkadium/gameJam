@@ -1,6 +1,5 @@
 // src/app/modes/page.tsx
-import Link from "next/link";
-import type { Route } from "next";
+import { resolveHref } from "@/utils/nav";
 
 function Card({
   title,
@@ -9,17 +8,17 @@ function Card({
 }: {
   title: string;
   desc: string;
-  href: Route;
+  href: string;
 }) {
   return (
-    <Link
-      href={href}
+    <a
+      href={resolveHref(href)}
       className="card"
       style={{ textDecoration: "none", color: "inherit" }}
     >
       <h3 style={{ marginBottom: 8 }}>{title}</h3>
       <p style={{ color: "#444" }}>{desc}</p>
-    </Link>
+    </a>
   );
 }
 
