@@ -1,17 +1,9 @@
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 
-export const metadata = { title: 'Streak Trivia – Speedrun' };
+export const metadata = { title: "Speed Run" };
 
-const SpeedClient = dynamic(() => import('./SpeedClient'), {
-  ssr: false,
-  loading: () => (
-    <section className="container">
-      <h1>Speedrun</h1>
-      <p>Loading…</p>
-    </section>
-  ),
-});
+const SpeedClient = dynamic(() => import("./SpeedClient"), { ssr: false });
 
-export default function SpeedPage() {
+export default function Page() {
   return <SpeedClient />;
 }
