@@ -1,14 +1,21 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PlayerService } from "@/services/player/PlayerService";
+import { navigate } from "@/utils/nav";
 
 const ps = new PlayerService();
 
 export default function WelcomePage() {
   const router = useRouter();
   const [name, setName] = useState(() => ps.getName() ?? "");
+
+  // If a name is already saved, skip this screen
+  useEffect(() => {
+    const existing = (ps.getName() || "").trim();
+    if (existing) navigate(router as any, "/modes");
+  }, []);
 
   return (
     <main className="container" style={{ padding: "48px 20px", maxWidth: 640 }}>
@@ -22,7 +29,7 @@ export default function WelcomePage() {
           const n = name.trim();
           if (!n) return;
           ps.setName(n);
-          router.push("/modes"); // → Page 3
+          navigate(router as any, "/modes"); // → Page 3
         }}
       >
         <label htmlFor="name" style={{ display: "block", marginBottom: 6 }}>

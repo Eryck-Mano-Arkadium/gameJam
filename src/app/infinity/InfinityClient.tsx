@@ -12,6 +12,7 @@ import RevealPanel from "@/components/RevealPanel";
 import Leaderboard from "@/components/Leaderboard";
 import LiveRegion from "@/components/LiveRegion";
 import { QuestionService } from "@/services/questions/QuestionService";
+import { resolveHref } from "@/utils/nav";
 import { PlayerService } from "@/services/player/PlayerService";
 
 const qs = new QuestionService();
@@ -162,7 +163,7 @@ export default function InfinityClient() {
             <strong>Tip:</strong> Add or change your name for the leaderboard.
           </p>
           <p>
-            <a className="btn" href="/name">
+            <a className="btn" href={resolveHref("/name")}>
               Insert / Change Name
             </a>
           </p>

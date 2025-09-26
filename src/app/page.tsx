@@ -2,16 +2,24 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { navigate } from "@/utils/nav";
+import { PlayerService } from "@/services/player/PlayerService";
 
 export default function SplashPage() {
   const router = useRouter();
+  const ps = new PlayerService();
 
   useEffect(() => {
-    const t = setTimeout(() => router.push("/welcome"), 3000);
+    const hasName = (ps.getName() || "").trim().length > 0;
+    const target = hasName ? "/modes" : "/welcome";
+    const t = setTimeout(() => navigate(router as any, target), 1500);
     return () => clearTimeout(t);
   }, [router]);
 
-  const go = () => router.push("/welcome");
+  const go = () => {
+    const hasName = (ps.getName() || "").trim().length > 0;
+    navigate(router as any, hasName ? "/modes" : "/welcome");
+  };
 
   return (
     <main
