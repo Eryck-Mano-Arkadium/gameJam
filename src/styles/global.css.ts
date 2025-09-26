@@ -1,13 +1,14 @@
 import { globalStyle } from "@vanilla-extract/css";
 import { vars } from "./theme.css";
 
-globalStyle("html,body,#__next", {
-  height: "100%",
+globalStyle("html,body,#__next,main", {
+  width: "1366px !important",
+  height: "768px !important",
 });
 
 globalStyle("body", {
   margin: 0,
-  background: vars.color.bg,
+  position: "relative",
   color: vars.color.text,
   fontFamily:
     "system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji",

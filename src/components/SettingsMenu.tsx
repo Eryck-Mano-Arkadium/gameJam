@@ -22,9 +22,9 @@ export default function SettingsMenu() {
         aria-label="Open settings"
         onClick={() => setOpen((v) => !v)}
         style={{
-          position: "fixed",
-          right: 16,
-          bottom: 16,
+          position: "absolute",
+          left: 16,
+          top: 16,
           width: 48,
           height: 48,
           borderRadius: "50%",
@@ -45,9 +45,9 @@ export default function SettingsMenu() {
           role="dialog"
           aria-label="Settings menu"
           style={{
-            position: "fixed",
-            right: 16,
-            bottom: 72,
+            position: "absolute",
+            top: 16,
+            left: 72,
             width: 260,
             background: "#fff",
             border: "1px solid #d0d7de",

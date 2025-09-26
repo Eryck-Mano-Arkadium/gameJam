@@ -10,7 +10,8 @@ module.exports = (phase) => {
 
   const config = {
     experimental: { typedRoutes: true },
-    output: 'export',
+    // Only use static export in production, not in development
+    ...(isDev ? {} : { output: 'export' }),
     // Use relative asset URLs for static export (prod). In dev, default is fine.
     assetPrefix: isDev ? undefined : './',
     trailingSlash: true,

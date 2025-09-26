@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { navigate } from "@/utils/nav";
 import { PlayerService } from "@/services/player/PlayerService";
-import { splashRoot, overlay, content } from "./splash.css";
+import { splashRoot, content } from "./splash.css";
 import { srOnly } from "@/styles/utils.css";
 
 export default function SplashPage() {
@@ -30,9 +30,6 @@ export default function SplashPage() {
       onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && go()}
       aria-label="Go to name screen"
     >
-      {/* Decorative overlay (optional) */}
-      <div className={overlay} aria-hidden="true" />
-
       {/* Accessible text (hidden visually, useful for screen readers) */}
       <div className={content}>
         <h1 className={srOnly}>Streak Trivia</h1>

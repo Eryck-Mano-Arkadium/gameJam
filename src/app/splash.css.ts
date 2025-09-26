@@ -3,26 +3,20 @@ import { vars } from "@/styles/theme.css";
 
 export const splashRoot = style({
   // full-screen clickable area
-  minHeight: "100vh",
+  minHeight: "100%",
   width: "100%",
   display: "grid",
   placeItems: "center",
   cursor: "pointer",
 
   // background image
-  backgroundImage: 'url("/assets/1_Intro Screen.png")',
+  backgroundImage: 'url("/assets/Intro Screen.png")',
   backgroundPosition: "center",
   backgroundRepeat: "no-repeat",
   backgroundSize: "cover",
 
   // subtle darken for readability if you add overlay text later
   position: "relative",
-});
-
-export const overlay = style({
-  position: "absolute",
-  inset: 0,
-  background: vars.color.overlay,
 });
 
 export const content = style({

@@ -12,6 +12,7 @@ import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useSpeedLeaderboard } from "@/hooks/useSpeedLeaderboard";
 import { PlayerService } from "@/services/player/PlayerService";
 import type { Route } from "next";
+import * as S from "./speed.css";
 
 type SpeedrunConfig = {
   durationMs: number;
@@ -145,81 +146,81 @@ export default function SpeedClient({
   };
 
   return (
-    <section className="container">
-      <h1>Speed Run</h1>
+    <section className={S.screen}>
+      <div >
+        <h1>Speed Run</h1>
 
-      {!finished ? (
-        <>
-          <Countdown
-            startTs={startTs}
-            endTs={endTs}
-            nowFn={nowFn}
-            warnAt={5}
-            onAnnounce={setMessage}
-          />
-          <div style={{ marginTop: 12 }}>
+        {!finished ? (
+          <>
+            <Countdown
+              startTs={startTs}
+              endTs={endTs}
+              nowFn={nowFn}
+              warnAt={5}
+              onAnnounce={setMessage}
+            />
+            <div style={{ marginTop: 12 }}>
+              <p>
+                Score: <strong>{score}</strong> • High score:{" "}
+                <strong>{highScore}</strong> •{" "}
+                <Link
+                  href={"/speed/leaderboard" as Route}
+                  className="btn"
+                  style={{ marginLeft: 8 }}
+                >
+                  View leaderboard
+                </Link>
+              </p>
+            </div>
+
+            <div style={{ marginTop: 12 }}>
+              <QuestionCard
+                category={question.category}
+                prompt={question.question}
+                options={{
+                  a: question.a,
+                  b: question.b,
+                  c: question.c,
+                  d: question.d,
+                }}
+                value={choice}
+                onChange={onPick}
+                disabled={false}
+                correct={question.correct}
+                revealCorrectInline={showAnswer}
+              />
+            </div>
+          </>
+        ) : (
+          <div className="card" aria-live="polite" aria-atomic="true">
+            <p>Time is up!</p>
             <p>
-              Score: <strong>{score}</strong> • High score:{" "}
-              <strong>{highScore}</strong> •{" "}
-              <Link
-                href={"/speed/leaderboard" as Route}
-                className="btn"
-                style={{ marginLeft: 8 }}
-              >
-                View leaderboard
-              </Link>
+              Your final score: <strong>{score}</strong>
             </p>
-          </div>
+            <p>
+              Personal best: <strong>{highScore}</strong>
+            </p>
 
-          <div style={{ marginTop: 12 }}>
-            <QuestionCard
-              category={question.category}
-              prompt={question.question}
-              options={{
-                a: question.a,
-                b: question.b,
-                c: question.c,
-                d: question.d,
-              }}
-              value={choice}
-              onChange={onPick}
-              disabled={false}
-              correct={question.correct}
-              revealCorrectInline={showAnswer}
-            />
-          </div>
-        </>
-      ) : (
-        <div className="card" aria-live="polite" aria-atomic="true">
-          <p>Time is up!</p>
-          <p>
-            Your final score: <strong>{score}</strong>
-          </p>
-          <p>
-            Personal best: <strong>{highScore}</strong>
-          </p>
+            <div style={{ marginTop: 12 }}>
+              <SpeedLeaderboard
+                records={records}
+                youName={name}
+                youScore={score}
+                youBestScore={highScore}
+              />
+            </div>
 
-          <div style={{ marginTop: 12 }}>
-            <SpeedLeaderboard
-              records={records}
-              youName={name}
-              youScore={score}
-              youBestScore={highScore}
-            />
+            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+              <button className="btn" onClick={reset}>
+                Play again
+              </button>
+              <Link className="btn" href={"/speed/leaderboard" as Route}>
+                Full leaderboard
+              </Link>
+            </div>
           </div>
-
-          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-            <button className="btn" onClick={reset}>
-              Play again
-            </button>
-            <Link className="btn" href={"/speed/leaderboard" as Route}>
-              Full leaderboard
-            </Link>
-          </div>
-        </div>
-      )}
-
-      <LiveRegion message={message} />
+        )}
+      </div>
     </section>
   );
 }
