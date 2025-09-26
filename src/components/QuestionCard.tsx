@@ -63,7 +63,9 @@ export default function QuestionCard({
         <strong>{category}</strong> — {prompt}
       </legend>
       {revealCorrectInline && (
-        <div style={{color: "#ffff"}}>Correct answer:{correct.toUpperCase()}</div>
+        <div style={{ color: "green" }}>
+          Correct answer:{correct.toUpperCase()}
+        </div>
       )}
       <div role="radiogroup" aria-label="Answers">
         {(["a", "b", "c", "d"] as const).map((k) => (
@@ -75,14 +77,22 @@ export default function QuestionCard({
               checked={value === k}
               onChange={() => onChange(k)}
               aria-checked={value === k}
-              style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 0, height: 0 }}
+              style={{
+                position: "absolute",
+                opacity: 0,
+                pointerEvents: "none",
+                width: 0,
+                height: 0,
+              }}
             />
             <div
               role="button"
               aria-pressed={value === k}
               style={value === k ? selectedStyle : baseBtnStyle}
             >
-              <span aria-hidden="true" style={keyStyle}>{k.toUpperCase()}</span>
+              <span aria-hidden="true" style={keyStyle}>
+                {k.toUpperCase()}
+              </span>
               <span id={`opt-${k}`}>{get(k)}</span>
             </div>
           </label>

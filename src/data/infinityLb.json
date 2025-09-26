@@ -1,0 +1,39 @@
+[
+  {
+    "name": "Harper",
+    "streak": 20,
+    "lastUpdateTs": 1735689600000,
+    "roundId": 0
+  },
+  {
+    "name": "Casey",
+    "streak": 18,
+    "lastUpdateTs": 1735689601000,
+    "roundId": 0
+  },
+  {
+    "name": "Logan",
+    "streak": 17,
+    "lastUpdateTs": 1735689602000,
+    "roundId": 0
+  },
+  {
+    "name": "Jordan",
+    "streak": 12,
+    "lastUpdateTs": 1735689603000,
+    "roundId": 0
+  },
+  { "name": "Eli", "streak": 14, "lastUpdateTs": 1735689604000, "roundId": 0 },
+  {
+    "name": "Indigo",
+    "streak": 10,
+    "lastUpdateTs": 1735689605000,
+    "roundId": 0
+  },
+  { "name": "Alex", "streak": 1, "lastUpdateTs": 1735689606000, "roundId": 0 },
+  { "name": "Gray", "streak": 1, "lastUpdateTs": 1735689607000, "roundId": 0 },
+  { "name": "Devon", "streak": 1, "lastUpdateTs": 1735689608000, "roundId": 0 },
+  { "name": "Kai", "streak": 1, "lastUpdateTs": 1735689609000, "roundId": 0 },
+  { "name": "Finn", "streak": 0, "lastUpdateTs": 1735689610000, "roundId": 0 },
+  { "name": "Bailey", "streak": 0, "lastUpdateTs": 1735689611000, "roundId": 0 }
+]
