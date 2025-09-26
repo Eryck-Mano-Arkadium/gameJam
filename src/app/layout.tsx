@@ -1,4 +1,4 @@
-import "./globals.css";
+import "@/styles/global.css.ts";
 import type { Metadata } from "next";
 import SettingsMenu from "@/components/SettingsMenu";
 

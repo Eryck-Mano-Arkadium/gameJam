@@ -1,16 +1,22 @@
-/** @type {import('next').NextConfig} */
+// next.config.js (CommonJS)
 const { PHASE_DEVELOPMENT_SERVER } = require('next/constants');
+const { createVanillaExtractPlugin } = require('@vanilla-extract/next-plugin');
 
+const withVanillaExtract = createVanillaExtractPlugin();
+
+/** @type {import('next').NextConfig} */
 module.exports = (phase) => {
   const isDev = phase === PHASE_DEVELOPMENT_SERVER;
-  return {
+
+  const config = {
     experimental: { typedRoutes: true },
     output: 'export',
-    // Use relative assets only for static export (prod). In dev, use default for correctness.
+    // Use relative asset URLs for static export (prod). In dev, default is fine.
     assetPrefix: isDev ? undefined : './',
     trailingSlash: true,
-    images: {
-      unoptimized: true
-    }
+    images: { unoptimized: true },
   };
+
+  // Important: wrap your config with the plugin
+  return withVanillaExtract(config);
 };
