@@ -4,6 +4,7 @@
 
 - Infinity: Global synchronized rounds with QUESTION → REVEAL → LEADERBOARD phases.
 - Speedrun: Solo rapid-fire session. Answer as many questions as possible before the timer ends.
+- Daily: 10-question set per day, no timer; points scale with speed.
 
 ## Speedrun Rules
 
@@ -32,6 +33,8 @@ Example (in `src/app/speed/page.tsx`):
 ```
 
 ## Dev
+- Daily Challenge: `DailyService` creates a deterministic set of 10 questions per day. `DailyClient` handles scoring (0 if wrong, otherwise a speed-based score) and blocks replays for the same day.
+  - Scoring: non-linear decay by 10s buckets up to 60s using odd weights (fastest → highest weight). Defaults: weights `[13,11,9,7,5,3]`, score interpolated between `basePoints` and `minPoints`.
 
 - Questions are loaded from `src/data/questions.json` via `QuestionService`.
 - UI components: `QuestionCard`, `Countdown`, `LiveRegion`.
