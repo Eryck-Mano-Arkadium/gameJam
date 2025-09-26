@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { useSound } from "@/hooks/useSound";
-
+import * as S from "./settings.css";
 const HOME_PATH: Route = "/modes";
 const NAME_PATH: Route = "/name";
 const SPEED_LB_PATH: Route = "/speed/leaderboard";
@@ -20,23 +20,10 @@ export default function SettingsMenu() {
       {/* FAB (gear) */}
       <button
         aria-label="Open settings"
+        className={S.btn}
         onClick={() => setOpen((v) => !v)}
-        style={{
-          position: "absolute",
-          left: 16,
-          top: 16,
-          width: 48,
-          height: 48,
-          borderRadius: "50%",
-          border: "1px solid red",
-          background: "#fff",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
-          cursor: "pointer",
-          fontSize: 22,
-          lineHeight: "48px",
-        }}
       >
-        ⚙️
+        <img src="/assets/Settings.png" alt="Settings" width={65} height={65} />
       </button>
 
       {/* Panel */}

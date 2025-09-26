@@ -9,11 +9,11 @@ export const screen = style({
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
-  background:  `url('/assets/bg.png') center / cover no-repeat`,
+  background: `url('/assets/bg.png') center / cover no-repeat`,
 });
 
 export const card = style({
-    position: "relative",
+  position: "relative",
 });
 
 /** Page title */
