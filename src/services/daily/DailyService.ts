@@ -1,4 +1,7 @@
-import { Question, QuestionService } from "@/services/questions/QuestionService";
+import {
+  Question,
+  QuestionService,
+} from "@/services/questions/QuestionService";
 
 const DAILY_KEY = "daily:date";
 const DAILY_SET_KEY = "daily:set"; // stores { date: string, questions: Question[] }
@@ -74,9 +77,11 @@ export class DailyService {
       const j = Math.floor(rnd() * (i + 1));
       [indices[i], indices[j]] = [indices[j], indices[i]];
     }
-    const pick = (all.length <= count
-      ? indices.map((i) => all[i])
-      : indices.slice(0, count).map((i) => all[i])) as Question[];
+    const pick = (
+      all.length <= count
+        ? indices.map((i) => all[i])
+        : indices.slice(0, count).map((i) => all[i])
+    ) as Question[];
 
     if (typeof window !== "undefined") {
       try {
@@ -89,7 +94,13 @@ export class DailyService {
     return pick;
   }
 
-  getProgress(): { date: string; idx: number; score: number; qStartMs: number; seen?: Record<number, number> } | null {
+  getProgress(): {
+    date: string;
+    idx: number;
+    score: number;
+    qStartMs: number;
+    seen?: Record<number, number>;
+  } | null {
     if (typeof window === "undefined") return null;
     try {
       const raw = localStorage.getItem(DAILY_PROGRESS_KEY);
@@ -108,7 +119,12 @@ export class DailyService {
     }
   }
 
-  saveProgress(idx: number, score: number, qStartMs: number, seen?: Record<number, number>) {
+  saveProgress(
+    idx: number,
+    score: number,
+    qStartMs: number,
+    seen?: Record<number, number>
+  ) {
     if (typeof window === "undefined") return;
     try {
       const payload = {
@@ -129,5 +145,3 @@ export class DailyService {
     } catch {}
   }
 }
-
-

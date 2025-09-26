@@ -1,44 +1,74 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import QuestionCard from "@/components/QuestionCard";
-import LiveRegion from "@/components/LiveRegion";
+// import LiveRegion from "@/components/LiveRegion"; // optional
 import { DailyService } from "@/services/daily/DailyService";
-import { DEFAULT_SCORE, scoreForElapsed, type ScoreConfig } from "@/services/daily/scoring";
-
-// ScoreConfig and defaults are imported
+import {
+  DEFAULT_SCORE,
+  scoreForElapsed,
+  type ScoreConfig,
+} from "@/services/daily/scoring";
+import { PlayerService } from "@/services/player/PlayerService";
+import { useDailyLeaderboard } from "@/hooks/useDailyLeaderboard";
+import DailyLeaderboard from "@/components/DailyLeaderboard";
 
 const svc = new DailyService();
+const ps = new PlayerService();
 
-export default function DailyClient({ config }: { config?: Partial<ScoreConfig> }) {
-  const cfg: ScoreConfig = { ...DEFAULT_SCORE, ...(config ?? {}) } as ScoreConfig;
+export default function DailyClient({
+  config,
+}: {
+  config?: Partial<ScoreConfig>;
+}) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const cfg: ScoreConfig = {
+    ...DEFAULT_SCORE,
+    ...(config ?? {}),
+  } as ScoreConfig;
 
-  const initialProgress = (typeof window !== "undefined" && svc.getProgress()) || null;
-  const [blocked, setBlocked] = useState(false);
+  const initialProgress =
+    (typeof window !== "undefined" && svc.getProgress()) || null;
+
+  // null = unknown yet; true|false after first effect
+  const [blocked, setBlocked] = useState<boolean | null>(null);
+
   const [questions] = useState(() => svc.getTodaySet(10));
   const [idx, setIdx] = useState(() => initialProgress?.idx ?? 0);
   const [score, setScore] = useState(() => initialProgress?.score ?? 0);
-  const [choice, setChoice] = useState<"a" | "b" | "c" | "d" | undefined>(undefined);
+  const [choice, setChoice] = useState<"a" | "b" | "c" | "d" | undefined>(
+    undefined
+  );
   const [message, setMessage] = useState("");
-  const [startedAt] = useState(() => Date.now());
-  const [qStart, setQStart] = useState(() => initialProgress?.qStartMs ?? Date.now());
+  const [qStart, setQStart] = useState(
+    () => initialProgress?.qStartMs ?? Date.now()
+  );
   const [seenMap, setSeenMap] = useState<Record<number, number>>(
     () => initialProgress?.seen ?? {}
   );
   const [done, setDone] = useState(false);
   const mountedRef = useRef(false);
 
+  const showAnswer = searchParams.get("showanswer") === "true";
+  const { date, records, submit } = useDailyLeaderboard(); // today
+  const name = ps.getName();
+
+  // On mount: detect if the user already played, and redirect to leaderboard
   useEffect(() => {
-    setBlocked(svc.hasPlayedToday());
-    if (initialProgress) setMessage("Resumed today’s challenge.");
-  }, []);
+    const played = svc.hasPlayedToday();
+    setBlocked(played);
+    if (played) {
+      router.replace("/daily/leaderboard");
+    }
+  }, [router]);
 
   const q = useMemo(() => questions[idx], [questions, idx]);
 
   useEffect(() => {
     if (mountedRef.current) {
       setChoice(undefined);
-      // use first-seen timestamp for this index; if none, record now
       setQStart((prev) => {
         const existing = seenMap[idx];
         if (existing != null) return existing;
@@ -50,17 +80,19 @@ export default function DailyClient({ config }: { config?: Partial<ScoreConfig> 
     mountedRef.current = true;
   }, [idx, seenMap]);
 
-  // Persist progress whenever key fields change and run a beforeunload safety
+  // Persist progress while playing
   useEffect(() => {
-    if (!done && !blocked) {
+    if (!done && blocked === false) {
       svc.saveProgress(idx, score, qStart, seenMap);
     }
   }, [idx, score, qStart, seenMap, done, blocked]);
 
   useEffect(() => {
     const handler = () => {
-      if (!done && !blocked) {
-        try { svc.saveProgress(idx, score, qStart, seenMap); } catch {}
+      if (!done && blocked === false) {
+        try {
+          svc.saveProgress(idx, score, qStart, seenMap);
+        } catch {}
       }
     };
     window.addEventListener("beforeunload", handler);
@@ -70,51 +102,53 @@ export default function DailyClient({ config }: { config?: Partial<ScoreConfig> 
   const onPick = (val: "a" | "b" | "c" | "d") => {
     if (done || blocked) return;
     setChoice(val);
+
+    let gained = 0;
     if (val === q.correct) {
       const elapsedMs = Date.now() - qStart;
-      const gained = scoreForElapsed(elapsedMs, cfg);
+      gained = scoreForElapsed(elapsedMs, cfg);
       setScore((s) => s + gained);
       setMessage(`Correct! +${gained} points`);
     } else {
       setMessage(`Wrong. +0 points`);
     }
 
-    // advance and persist when finishing
     if (idx + 1 < questions.length) {
       setIdx(idx + 1);
     } else {
-      setDone(true);
-      // ensure we persist the latest score value
-      setScore((prev) => {
-        svc.markPlayedToday(prev);
-        svc.clearProgress();
-        return prev;
-      });
+      setDone(true); // finalize in effect below
     }
   };
 
-  if (blocked) {
+  // Finalize once and redirect to /daily/leaderboard
+  const pushedRef = useRef(false);
+  useEffect(() => {
+    if (!done || pushedRef.current) return;
+    pushedRef.current = true;
+
+    const final = score;
+    svc.markPlayedToday(final);
+    svc.clearProgress();
+    if (name && name.trim()) submit(name.trim(), final);
+
+    try {
+      sessionStorage.setItem("daily:last", String(final));
+    } catch {}
+
+    router.replace("/daily/leaderboard");
+  }, [done, score, name, submit, router]);
+
+  // While we decide/redirect (blocked === null OR blocked === true), render a tiny placeholder
+  if (blocked === null || blocked === true) {
     return (
       <section className="container">
         <h1>Daily Challenge</h1>
-        <div className="card">
-          <p>You already played today. Come back tomorrow!</p>
-          <p>Your score today: <strong>{svc.getTodayScore()}</strong></p>
-          <p style={{ marginTop: 12 }}>
-            Try other modes:
-            {" "}
-            <a className="btn" href="/speed">Speedrun</a>
-            {" "}
-            <a className="btn" href="/infinity" style={{ marginLeft: 8 }}>Infinity</a>
-          </p>
-          <p style={{ marginTop: 12 }}>
-            Today’s leaderboard will be shown here. (Coming soon)
-          </p>
-        </div>
+        <p>Redirecting…</p>
       </section>
     );
   }
 
+  // Normal play UI
   return (
     <section className="container">
       <h1>Daily Challenge</h1>
@@ -129,28 +163,19 @@ export default function DailyClient({ config }: { config?: Partial<ScoreConfig> 
           </p>
         </div>
         <div className="card" style={{ flex: 2, minWidth: 320 }}>
-          {!done ? (
-            <QuestionCard
-              category={q.category}
-              prompt={q.question}
-              options={{ a: q.a, b: q.b, c: q.c, d: q.d }}
-              value={choice}
-              onChange={onPick}
-              disabled={false}
-              correct={q.correct}
-            />
-          ) : (
-            <div aria-live="polite" aria-atomic="true">
-              <p>Nice work — you’re done for today!</p>
-              <p>Your final score: <strong>{score}</strong></p>
-              <p>Come back tomorrow for a new set of questions.</p>
-            </div>
-          )}
+          <QuestionCard
+            category={q.category}
+            prompt={q.question}
+            options={{ a: q.a, b: q.b, c: q.c, d: q.d }}
+            value={choice}
+            onChange={onPick}
+            disabled={false}
+            correct={q.correct}
+            revealCorrectInline={showAnswer}
+          />
         </div>
       </div>
-      <LiveRegion message={message} />
+      {/* <LiveRegion message={message} /> */}
     </section>
   );
 }
-
-
