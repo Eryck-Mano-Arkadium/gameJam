@@ -1,22 +1,64 @@
-export type ScoreConfig = { basePoints: number; minPoints: number };
+export type ScoreConfig = {
+  /** Hidden per-question time limit */
+  limitMs: number; // default 30_000
 
-export const DEFAULT_SCORE: ScoreConfig = { basePoints: 1000, minPoints: 100 };
+  /** Bucket thresholds (in seconds, inclusive lower bound) */
+  highFromSec: number; // 25
+  midFromSec: number; // 15
+  lowFromSec: number; // 1
 
-// elapsedMs -> non-linear bucketed weight in 10s segments up to 60s
+  /** Weights (points per 1 second of remaining time) */
+  weightHigh: number; // 40
+  weightMid: number; // 30
+  weightLow: number; // 20
+
+  /** Floors for edge cases */
+  underOneSecondPoints: number; // 10 when 0 < remaining < 1s
+  overtimePoints: number; // 10 when elapsed > limit
+};
+
+export const DEFAULT_SCORE: ScoreConfig = {
+  limitMs: 30_000,
+  highFromSec: 25,
+  midFromSec: 15,
+  lowFromSec: 1,
+  weightHigh: 40,
+  weightMid: 30,
+  weightLow: 20,
+  underOneSecondPoints: 10,
+  overtimePoints: 10,
+};
+
+/**
+ * Compute score from elapsed time since the question was first shown.
+ * We convert to *remaining* time and apply a bucketed weight:
+ *   - 30–25s → ×40
+ *   - 25–15s → ×30
+ *   - 15–1s  → ×20
+ *   - <1s    → 10 pts
+ *   - overtime (>30s) → 10 pts
+ */
 export function scoreForElapsed(
   elapsedMs: number,
-  config: ScoreConfig = DEFAULT_SCORE,
-  weights: number[] = [13, 11, 9, 7, 5, 3]
+  cfg: ScoreConfig = DEFAULT_SCORE
 ): number {
-  const seg = Math.max(0, Math.min(5, Math.floor(elapsedMs / 10000)));
-  const maxW = weights[0];
-  const minW = weights[weights.length - 1];
-  const ratio = (weights[seg] - minW) / (maxW - minW); // 0..1
-  const { basePoints, minPoints } = config;
-  return Math.max(
-    minPoints,
-    Math.round(minPoints + (basePoints - minPoints) * ratio)
-  );
+  const remainingMs = cfg.limitMs - elapsedMs;
+
+  // Overtime → base points
+  if (remainingMs <= 0) return cfg.overtimePoints;
+
+  const remainingSec = remainingMs / 1000;
+
+  if (remainingSec >= cfg.highFromSec) {
+    return Math.round(remainingSec * cfg.weightHigh);
+  }
+  if (remainingSec >= cfg.midFromSec) {
+    return Math.round(remainingSec * cfg.weightMid);
+  }
+  if (remainingSec >= cfg.lowFromSec) {
+    return Math.round(remainingSec * cfg.weightLow);
+  }
+
+  // < 1s left
+  return cfg.underOneSecondPoints;
 }
-
-

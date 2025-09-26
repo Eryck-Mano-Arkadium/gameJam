@@ -1,8 +1,8 @@
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 
-export const metadata = { title: 'Streak Trivia – Daily' };
+export const metadata = { title: "Streak Trivia – Daily" };
 
-const DailyClient = dynamic(() => import('./DailyClient'), {
+const DailyClient = dynamic(() => import("./DailyClient"), {
   ssr: false,
   loading: () => (
     <section className="container">
