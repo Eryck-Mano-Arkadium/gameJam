@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Countdown from "@/components/Countdown";
 import QuestionCard from "@/components/QuestionCard";
 import LiveRegion from "@/components/LiveRegion";
@@ -21,15 +22,28 @@ const DEFAULT_CONFIG: SpeedrunConfig = {
 
 const svc = new QuestionService();
 
-export default function SpeedClient({ config }: { config?: Partial<SpeedrunConfig> }) {
-  const cfg: SpeedrunConfig = { ...DEFAULT_CONFIG, ...(config ?? {}) } as SpeedrunConfig;
+export default function SpeedClient({
+  config,
+}: {
+  config?: Partial<SpeedrunConfig>;
+}) {
+  const searchParams = useSearchParams();
+  const cfg: SpeedrunConfig = {
+    ...DEFAULT_CONFIG,
+    ...(config ?? {}),
+  } as SpeedrunConfig;
 
   const [startTs] = useState(() => Date.now());
   const [index, setIndex] = useState(0);
-  const [choice, setChoice] = useState<"a" | "b" | "c" | "d" | undefined>(undefined);
+  const [choice, setChoice] = useState<"a" | "b" | "c" | "d" | undefined>(
+    undefined
+  );
   const [score, setScore] = useState(0);
   const [message, setMessage] = useState("");
   const [finished, setFinished] = useState(false);
+
+  // Check for showanswer query parameter
+  const showAnswer = searchParams.get("showanswer") === "true";
   const [getHigh, setHigh] = useLocalStorage<number>("speedrun_highscore", 0);
   const [highScore, setHighScore] = useState<number>(0);
 
@@ -93,6 +107,7 @@ export default function SpeedClient({ config }: { config?: Partial<SpeedrunConfi
       setHigh(score);
     }
   }, [score, highScore, setHigh]);
+  console.log(showAnswer)
 
   return (
     <section className="container">
@@ -109,20 +124,25 @@ export default function SpeedClient({ config }: { config?: Partial<SpeedrunConfi
           />
           <div style={{ marginTop: 12 }}>
             <p>
-              Score: <strong>{score}</strong>
-              {" "}• High score: <strong>{highScore}</strong>
+              Score: <strong>{score}</strong> • High score:{" "}
+              <strong>{highScore}</strong>
             </p>
           </div>
           <div style={{ marginTop: 12 }}>
             <QuestionCard
               category={question.category}
               prompt={question.question}
-              options={{ a: question.a, b: question.b, c: question.c, d: question.d }}
+              options={{
+                a: question.a,
+                b: question.b,
+                c: question.c,
+                d: question.d,
+              }}
               value={choice}
               onChange={onPick}
               disabled={false}
               correct={question.correct}
-              revealCorrectInline={false}
+              revealCorrectInline={showAnswer}
             />
           </div>
           {/* No submit button in speedrun; selection advances automatically */}
@@ -130,8 +150,12 @@ export default function SpeedClient({ config }: { config?: Partial<SpeedrunConfi
       ) : (
         <div className="card" aria-live="polite" aria-atomic="true">
           <p>Time is up!</p>
-          <p>Your final score: <strong>{score}</strong></p>
-          <p>High score: <strong>{highScore}</strong></p>
+          <p>
+            Your final score: <strong>{score}</strong>
+          </p>
+          <p>
+            High score: <strong>{highScore}</strong>
+          </p>
           <p>Leaderboard coming soon.</p>
         </div>
       )}
@@ -140,5 +164,3 @@ export default function SpeedClient({ config }: { config?: Partial<SpeedrunConfi
     </section>
   );
 }
-
-

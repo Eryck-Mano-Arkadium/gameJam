@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useClock } from "@/hooks/useClock";
 import { useAudio } from "@/hooks/useAudio";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
@@ -19,6 +20,7 @@ const ps = new PlayerService();
 type RoundAnswer = { roundId: number; choice?: "a" | "b" | "c" | "d" };
 
 export default function InfinityClient() {
+  const searchParams = useSearchParams();
   const clock = useClock();
   const audio = useAudio();
   const { submit, recordsForRound } = useLeaderboard();
@@ -35,17 +37,59 @@ export default function InfinityClient() {
 
   const [answer, setAnswer] = useState<RoundAnswer>({ roundId: -1 });
   const [liveMsg, setLiveMsg] = useState("");
+  const [fakePlayerCount, setFakePlayerCount] = useState(0);
   const lastRoundHandled = useRef<number>(-1);
+  const fakeCountInterval = useRef<NodeJS.Timeout | null>(null);
 
   const info = clock.phaseInfo();
   const roundId = info.roundId;
   const question = useMemo(() => qs.getQuestionByRound(roundId), [roundId]);
+
+  // Check for showanswer query parameter
+  const showAnswer = searchParams.get("showanswer") === "true";
+
 
   useEffect(() => {
     if (info.phase === "QUESTION" && answer.roundId !== roundId) {
       setAnswer({ roundId });
     }
   }, [info.phase, roundId]);
+
+  // Handle fake player count during question phase
+  useEffect(() => {
+    if (info.phase === "QUESTION") {
+      // Reset count when new question starts
+      if (answer.roundId === roundId) {
+        setFakePlayerCount(0);
+      }
+      
+      // Start the fake count timer
+      if (fakeCountInterval.current) {
+        clearInterval(fakeCountInterval.current);
+      }
+      
+      fakeCountInterval.current = setInterval(() => {
+        setFakePlayerCount(prev => {
+          // Random increment between 3-150 players per second
+          const increment = Math.floor(Math.random() * 40) + 3;
+          return prev + increment;
+        });
+      }, 1000);
+    } else {
+      // Clear interval when not in question phase
+      if (fakeCountInterval.current) {
+        clearInterval(fakeCountInterval.current);
+        fakeCountInterval.current = null;
+      }
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (fakeCountInterval.current) {
+        clearInterval(fakeCountInterval.current);
+      }
+    };
+  }, [info.phase, roundId, answer.roundId]);
 
   useEffect(() => {
     setLiveMsg(
@@ -143,21 +187,38 @@ export default function InfinityClient() {
 
         <div className="card" style={{ flex: 2, minWidth: 320 }}>
           {info.phase === "QUESTION" && (
-            <QuestionCard
-              key={`q-${roundId}`}
-              category={question.category}
-              prompt={question.question}
-              options={{
-                a: question.a,
-                b: question.b,
-                c: question.c,
-                d: question.d,
-              }}
-              value={answer.choice}
-              onChange={onSelect}
-              disabled={disabled}
-              correct={question.correct}
-            />
+            <>
+              {fakePlayerCount > 0 && (
+                <div style={{ 
+                  marginBottom: 16, 
+                  padding: 8, 
+                  backgroundColor: "#f0f8ff", 
+                  border: "1px solid #0366d6", 
+                  borderRadius: 6,
+                  textAlign: "center",
+                  fontSize: 14,
+                  color: "#0366d6"
+                }}>
+                  <strong>{fakePlayerCount}</strong> players already responded
+                </div>
+              )}
+              <QuestionCard
+                key={`q-${roundId}`}
+                category={question.category}
+                prompt={question.question}
+                options={{
+                  a: question.a,
+                  b: question.b,
+                  c: question.c,
+                  d: question.d,
+                }}
+                value={answer.choice}
+                onChange={onSelect}
+                disabled={disabled}
+                correct={question.correct}
+                revealCorrectInline={showAnswer}
+              />
+            </>
           )}
           {info.phase === "REVEAL" && (
             <RevealPanel
