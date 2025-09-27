@@ -1,5 +1,13 @@
+import { SoundService } from "@/services/settings/SoundService";
+
 export class AudioService {
   private ctx?: AudioContext;
+  private defaultVolumes: Record<string, number> = {
+    tick: 1.0,
+    correct: 1.0,
+    wrong: 1.0,
+    timer: 0.9,
+  };
 
   private ensureCtx() {
     if (typeof window === "undefined") return;
@@ -47,6 +55,52 @@ export class AudioService {
     } catch {
       /* ignore */
     }
+  }
+
+  private resolveUrl(relativePath: string): string {
+    try {
+      if (typeof window !== "undefined") {
+        return new URL(relativePath.replace(/^\//, ""), document.baseURI).toString();
+      }
+      return relativePath.replace(/^\//, "");
+    } catch {
+      return relativePath.replace(/^\//, "");
+    }
+  }
+
+  async playFile(relativePath: string, volumeKey: keyof AudioService["defaultVolumes"] | string = "tick") {
+    if (typeof window === "undefined") return;
+    if (SoundService.isMuted()) return;
+    try {
+      const url = this.resolveUrl(relativePath);
+      const el = new Audio(url);
+      const vol = this.defaultVolumes[String(volumeKey)] ?? 1.0;
+      el.volume = vol;
+      await el.play();
+    } catch {
+      /* ignore */
+    }
+  }
+
+  async playCorrect() {
+    await this.playFile("audio/correct.mp3", "correct");
+  }
+
+  async playWrong() {
+    await this.playFile("audio/wrong.mp3", "wrong");
+  }
+
+  async playTimer() {
+    // Ensure only one timer loop plays at a time
+    if (typeof window === "undefined") return;
+    if (SoundService.isMuted()) return;
+    try {
+      const url = this.resolveUrl("audio/Timer.mp3");
+      const el = new Audio(url);
+      el.volume = this.defaultVolumes["timer"] ?? 0.9;
+      // Designed as an 11s track with per-second pings and emphasized ending
+      el.play().catch(() => {});
+    } catch {}
   }
 }
 
