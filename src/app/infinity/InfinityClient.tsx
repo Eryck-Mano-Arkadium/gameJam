@@ -152,17 +152,21 @@ export default function InfinityClient() {
   return (
     <section className={S.screen}>
       <div className={S.container}>
-        <img src="/assets/infinity-logo.png" alt="logo" className={S.logo} />
+        {info.phase !== "LEADERBOARD" && (
+          <img src="/assets/infinity-logo.png" alt="logo" className={S.logo} />
+        )}
 
         <div className={S.questionContainer}>
-          <div className={S.scoreContainer}>
-            <img
-              src="/assets/speed-score.png"
-              alt="score"
-              className={S.score}
-            />
-            <span className={S.scoreText}>Streak: {streak}</span>
-          </div>
+          {info.phase !== "LEADERBOARD" && (
+            <div className={S.scoreContainer}>
+              <img
+                src="/assets/speed-score.png"
+                alt="score"
+                className={S.score}
+              />
+              <span className={S.scoreText}>Streak: {streak}</span>
+            </div>
+          )}
           {info.phase === "QUESTION" && (
             <QuestionCard
               key={`q-${roundId}`}
@@ -220,9 +224,10 @@ export default function InfinityClient() {
             variant="timebar"
             fillMode="remaining"
           />
-          {fakePlayerCount > 0 && (
+          {fakePlayerCount > 0 && info.phase === "QUESTION" && (
             <div className={S.fakePlayerCount}>
               <strong>{fakePlayerCount}</strong> players already answered!
+              {showAnswer && <span> Correct Answer: {question.correct}</span>}
             </div>
           )}
         </div>

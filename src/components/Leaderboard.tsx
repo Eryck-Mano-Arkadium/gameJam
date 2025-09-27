@@ -2,14 +2,51 @@
 
 import React from "react";
 import { LeaderboardRecord } from "@/services/leaderboard/LeaderboardService";
+import * as S from "./leaderboard.css";
 
 type Props = {
   roundId: number;
-  records: LeaderboardRecord[]; // may be empty; assumed sorted or will be re-sorted here
+  records: LeaderboardRecord[];
   youName: string;
   youStreak: number;
-  youBestStreak: number;
+  youBestStreak: number; // kept for future use; not displayed in this compact mock
 };
+
+type RowProps = {
+  rank: number;
+  name: string;
+  streak: number;
+  isYou: boolean;
+};
+
+function avatarFor(rank: number, isYou: boolean) {
+  if (isYou) return "/assets/me-avatar.png";
+  if (rank === 1) return "/assets/1stPlace.png";
+  if (rank === 2) return "/assets/2ndPlace.png";
+  if (rank === 3) return "/assets/3rdPlace.png";
+  return "/assets/normal-avatar.png";
+}
+
+function LBRow({ rank, name, streak, isYou }: RowProps) {
+  const rowClass = isYou ? `${S.row} ${S.rowUser}` : S.row;
+  const label = isYou ? `${name} (Me)` : name;
+  const avatar = avatarFor(rank, isYou);
+
+  return (
+    <div className={rowClass} role="row">
+      <div className={S.rankCell}>{rank}</div>
+      <img
+        className={S.avatar}
+        src={avatar}
+        alt={isYou ? "Your avatar" : `${name} avatar`}
+      />
+      <div className={S.name} aria-current={isYou ? "true" : undefined}>
+        {label}
+      </div>
+      <div className={S.score}>{streak}</div>
+    </div>
+  );
+}
 
 export default function Leaderboard({
   roundId,
@@ -20,9 +57,9 @@ export default function Leaderboard({
 }: Props) {
   const youKey = youName?.trim().toLowerCase();
 
-  // Merge "you" in case your submission didn't land yet (first frame of LEADERBOARD)
+  // Merge "you" in case your submission hasn't landed yet
   const hasYou =
-    youKey && records.some((r) => r.name.trim().toLowerCase() === youKey);
+    !!youKey && records.some((r) => r.name.trim().toLowerCase() === youKey);
   const merged: LeaderboardRecord[] =
     hasYou || !youName
       ? records.slice()
@@ -31,7 +68,7 @@ export default function Leaderboard({
           { name: youName, streak: youStreak, lastUpdateTs: 0, roundId },
         ];
 
-  // Deterministic sort: streak desc, time asc, name asc
+  // Sort (streak desc, time asc, name asc)
   merged.sort((a, b) => {
     if (a.streak !== b.streak) return b.streak - a.streak;
     if (a.lastUpdateTs !== b.lastUpdateTs)
@@ -39,102 +76,44 @@ export default function Leaderboard({
     return a.name.localeCompare(b.name);
   });
 
-  // Compute rank (1-based) if you have a name
-  const rank = youKey
-    ? (() => {
-        const idx = merged.findIndex(
-          (r) => r.name.trim().toLowerCase() === youKey
-        );
-        return idx >= 0 ? idx + 1 : undefined;
-      })()
-    : undefined;
+  const youIndex = youKey
+    ? merged.findIndex((r) => r.name.trim().toLowerCase() === youKey)
+    : -1;
+  const youRank = youIndex >= 0 ? youIndex + 1 : undefined;
+  const youInTop5 = !!youRank && youRank <= 5;
 
-  const top10 = merged.slice(0, 10);
-  const youInTop10 = youKey
-    ? top10.some((r) => r.name.trim().toLowerCase() === youKey)
-    : false;
+  const top5 = merged.slice(0, 5);
 
   return (
-    <section aria-labelledby="lb-title">
-      <h3 id="lb-title">Leaderboard — Round #{roundId}</h3>
+    <section className={S.wrapper} aria-labelledby="lb-title">
+      <h3 id="lb-title" className={S.title}>
+        Leaderboard
+      </h3>
 
-      {/* Top 10 */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "3rem 1fr 6rem",
-          gap: 8,
-          maxWidth: 520,
-        }}
-      >
-        <div style={{ fontWeight: 600 }}>#</div>
-        <div style={{ fontWeight: 600 }}>Player</div>
-        <div style={{ fontWeight: 600, textAlign: "right" }}>Streak</div>
+      <div className={S.list} role="table" aria-label="Top players">
+        {top5.length === 0 && <div className={S.empty}>No entries yet</div>}
 
-        {top10.length === 0 && (
-          <>
-            <div>—</div>
-            <div>No entries yet</div>
-            <div style={{ textAlign: "right" }}>—</div>
-          </>
-        )}
-
-        {top10.map((r, i) => {
-          const isYou = youKey && r.name.trim().toLowerCase() === youKey;
+        {top5.map((r, i) => {
+          const isYou = !!youKey && r.name.trim().toLowerCase() === youKey;
           return (
-            <React.Fragment key={`${r.name}-${i}`}>
-              <div>{i + 1}</div>
-              <div
-                aria-current={isYou ? "true" : undefined}
-                style={isYou ? { fontWeight: 700 } : undefined}
-              >
-                {r.name}
-                {isYou ? " (you)" : ""}
-              </div>
-              <div style={{ textAlign: "right" }}>{r.streak}</div>
-            </React.Fragment>
+            <LBRow
+              key={`${r.name}-${i}`}
+              rank={i + 1}
+              name={r.name}
+              streak={r.streak}
+              isYou={isYou}
+            />
           );
         })}
-      </div>
 
-      {/* Your stats (always shown) */}
-      <div className="card" style={{ marginTop: 16 }}>
-        <h4>Your stats</h4>
-        {youName ? (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
-              gap: 12,
-              maxWidth: 520,
-            }}
-          >
-            <div>
-              <div style={{ color: "#555" }}>Name</div>
-              <div style={{ fontWeight: 600 }}>{youName}</div>
-            </div>
-            <div>
-              <div style={{ color: "#555" }}>Current streak</div>
-              <div style={{ fontWeight: 600 }}>{youStreak}</div>
-            </div>
-            <div>
-              <div style={{ color: "#555" }}>Position</div>
-              <div style={{ fontWeight: 600 }}>{rank ? `#${rank}` : "—"}</div>
-            </div>
-            <div>
-              <div style={{ color: "#555" }}>Personal best</div>
-              <div style={{ fontWeight: 700 }}>{youBestStreak}</div>
-            </div>
-            <div style={{ gridColumn: "1 / -1", color: "#666", fontSize: 12 }}>
-              {youInTop10
-                ? "You are currently in the Top 10."
-                : "You are outside the Top 10."}
-            </div>
-          </div>
-        ) : (
-          <p>
-            <em>Set your name to appear on the leaderboard.</em>
-          </p>
+        {/* If you are NOT in the Top 5, append your row at the bottom */}
+        {youName && !youInTop5 && youRank && (
+          <LBRow
+            rank={youRank}
+            name={youName}
+            streak={youStreak}
+            isYou={true}
+          />
         )}
       </div>
     </section>
