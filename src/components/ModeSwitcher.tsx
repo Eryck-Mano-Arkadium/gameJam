@@ -1,19 +1,19 @@
-import { resolveHref } from "@/utils/nav";
+import NavLink from "@/components/NavLink";
 
 export default function ModeSwitcher() {
   return (
     <div className="card" aria-labelledby="mode-switcher">
       <h2 id="mode-switcher">Mode Switcher</h2>
       <div className="row">
-        <a className="btn" href={resolveHref("/infinity")}>
+        <NavLink className="btn" to="/infinity">
           Infinity
-        </a>
-        <a className="btn" href={resolveHref("/daily")}>
+        </NavLink>
+        <NavLink className="btn" to="/daily">
           Daily
-        </a>
-        <a className="btn" href={resolveHref("/speed")}>
+        </NavLink>
+        <NavLink className="btn" to="/speed">
           Speed Run
-        </a>
+        </NavLink>
       </div>
     </div>
   );

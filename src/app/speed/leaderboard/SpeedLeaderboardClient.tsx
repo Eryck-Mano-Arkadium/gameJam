@@ -16,7 +16,7 @@ export default function SpeedLeaderboardClient() {
   useEffect(() => {
     const ps = new PlayerService();
     setYouName(ps.getName() ?? "");
-    setRun(Number(sessionStorage.getItem("speed:last") ?? "0"));
+    setRun(Number(sessionStorage.getItem("speedrun:last") ?? "0"));
     setBest(Number(localStorage.getItem("speedrun_highscore") ?? "0"));
   }, []);
 
