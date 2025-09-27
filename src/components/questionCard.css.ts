@@ -46,7 +46,8 @@ export const inputWrapper = style({
 
 export const button = style({
   background: "url('/assets/Question_Box.png') center no-repeat",
-  boxShadow: 'rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px',
+  boxShadow:
+    "rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px",
   borderRadius: "22px",
   cursor: "pointer",
   display: "flex",
@@ -61,6 +62,6 @@ export const button = style({
   selectors: {
     "&:hover": {
       filter: "brightness(1.05)",
-    }
-  }
+    },
+  },
 });
