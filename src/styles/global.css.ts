@@ -2,9 +2,6 @@ import { globalStyle } from "@vanilla-extract/css";
 import { vars } from "./theme.css";
 
 globalStyle("html,body,#__next,main", {
-  margin: 10,
-  padding: 0,
-  borderRadius: 10,
   width: "1366px !important",
   height: "768px !important",
 });

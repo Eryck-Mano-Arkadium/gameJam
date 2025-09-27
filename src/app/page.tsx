@@ -11,11 +11,6 @@ export default function SplashPage() {
   const router = useRouter();
   const ps = new PlayerService();
 
-  // useEffect(() => {
-  //   const t = setTimeout(() => router.push("/welcome"), 3000);
-  //   return () => clearTimeout(t);
-  // }, [router]);
-
   const go = () => {
     const hasName = (ps.getName() || "").trim().length > 0;
     navigate(router as any, hasName ? "/modes" : "/welcome");

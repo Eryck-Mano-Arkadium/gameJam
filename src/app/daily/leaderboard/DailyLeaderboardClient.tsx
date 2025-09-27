@@ -21,7 +21,7 @@ export default function DailyLeaderboardClient() {
   }, []);
 
   return (
-    <main className={S.screen} style={{ padding: "48px 20px" }}>
+    <main className={S.screen}>
       <DailyLeaderboard
         date={date}
         records={records}

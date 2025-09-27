@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "npm run build && npm run preview",
     "dev:build": "npm run build && npm run preview",
     "dev:watch": "chokidar \"src/**/*\" \"public/**/*\" -c \"npm run build\"",
     "dev:serve": "npx serve out -l 3000",

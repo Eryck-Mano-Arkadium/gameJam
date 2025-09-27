@@ -21,7 +21,7 @@ export default function SpeedLeaderboardClient() {
   }, []);
 
   return (
-    <main className={S.screen} style={{ padding: "48px 20px" }}>
+    <main className={S.screen}>
       <SpeedLeaderboard
         records={records}
         youName={youName}
