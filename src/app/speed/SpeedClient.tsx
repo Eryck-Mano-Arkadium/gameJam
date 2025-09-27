@@ -21,7 +21,7 @@ type SpeedrunConfig = {
 };
 
 const DEFAULT_CONFIG: SpeedrunConfig = {
-  durationMs: 10_000,
+  durationMs: 40_000,
   pointsCorrect: 50,
   pointsWrong: -20,
 };
@@ -68,12 +68,12 @@ export default function SpeedClient({
   }, [index]);
 
   // finish when timer ends (no state updates during render)
-  useEffect(() => {
-    const id = setInterval(() => {
-      if (!finished && Date.now() >= endTs) setFinished(true);
-    }, 100);
-    return () => clearInterval(id);
-  }, [endTs, finished]);
+  // useEffect(() => {
+  //   const id = setInterval(() => {
+  //     if (!finished && Date.now() >= endTs) setFinished(true);
+  //   }, 100);
+  //   return () => clearInterval(id);
+  // }, [endTs, finished]);
 
   // Load high score once
   useEffect(() => {
@@ -147,19 +147,12 @@ export default function SpeedClient({
 
   return (
     <section className={S.screen}>
-      <div >
-        <h1>Speed Run</h1>
+      <div className={S.container}>
+        <img src="/assets/speed-logo.png" alt="logo" className={S.logo} />
 
         {!finished ? (
           <>
-            <Countdown
-              startTs={startTs}
-              endTs={endTs}
-              nowFn={nowFn}
-              warnAt={5}
-              onAnnounce={setMessage}
-            />
-            <div style={{ marginTop: 12 }}>
+            {/* <div style={{ marginTop: 12 }}>
               <p>
                 Score: <strong>{score}</strong> • High score:{" "}
                 <strong>{highScore}</strong> •{" "}
@@ -171,9 +164,17 @@ export default function SpeedClient({
                   View leaderboard
                 </Link>
               </p>
-            </div>
+            </div> */}
 
-            <div style={{ marginTop: 12 }}>
+            <div className={S.questionContainer}>
+              <div className={S.scoreContainer}>
+                <img
+                  src="/assets/speed-score.png"
+                  alt="score"
+                  className={S.score}
+                />
+                <span className={S.scoreText}>{index + 1}</span>
+              </div>
               <QuestionCard
                 category={question.category}
                 prompt={question.question}
@@ -190,6 +191,15 @@ export default function SpeedClient({
                 revealCorrectInline={showAnswer}
               />
             </div>
+            <Countdown
+              startTs={startTs}
+              endTs={endTs}
+              nowFn={nowFn}
+              warnAt={5}
+              onAnnounce={setMessage}
+              variant="timebar"
+              fillMode="remaining" // 👈 left orange = time left
+            />
           </>
         ) : (
           <div className="card" aria-live="polite" aria-atomic="true">
