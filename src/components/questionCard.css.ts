@@ -1,3 +1,4 @@
+// src/components/questionCard.css.ts
 import { style } from "@vanilla-extract/css";
 
 export const card = style({
@@ -31,17 +32,17 @@ export const alternativesSection = style({
   justifyContent: "center",
 });
 
+export const inputWrapper = style({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+});
+
 export const input = style({
   opacity: 0,
   pointerEvents: "none",
   width: 0,
   height: 0,
-});
-
-export const inputWrapper = style({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
 });
 
 export const button = style({
@@ -53,15 +54,74 @@ export const button = style({
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
+  textAlign: "center",
   width: "400px",
   height: "80px",
-  fontSize: "34px",
+  fontSize: "30px",
   fontWeight: "600",
   color: "#ffff",
   marginBottom: "10px",
+  paddingLeft: "10px",
+  selectors: { "&:hover": { filter: "brightness(1.05)" } },
+});
+
+export const selectedFromInput = style({
   selectors: {
-    "&:hover": {
-      filter: "brightness(1.05)",
+    [`${input}:checked + &`]: {
+      background: "linear-gradient(180deg, #FFC64C 0%, #F3A81D 100%)",
+      boxShadow:
+        "0 8px 0 rgba(0,0,0,.18), inset 0 2px 0 rgba(255,255,255,.55), 0 0 0 3px rgba(25,211,126,.28)",
+      transform: "translateY(-2px)",
+      filter: "none",
+    },
+    [`fieldset[disabled] &`]: {
+      filter: "grayscale(.25) opacity(.8)",
+      cursor: "not-allowed",
+    },
+  },
+});
+
+/* -------- NEW: reveal mode marker + correct/wrong skins -------- */
+
+export const revealRoot = style({}); // just a marker class on the fieldset
+
+export const buttonCorrect = style({
+  selectors: {
+    // reveal state (unclicked or disabled)
+    [`${revealRoot} &`]: {
+      background: "linear-gradient(180deg, #19D37E 0%, #0CB25F 100%)",
+      boxShadow:
+        "0 8px 0 rgba(0,0,0,.18), inset 0 2px 0 rgba(255,255,255,.55), 0 0 0 3px rgba(25,211,126,.28)",
+      transform: "translateY(-2px)",
+      filter: "none",
+    },
+    // 👇 override the yellow `:checked` skin during reveal
+    [`${revealRoot} ${input}:checked + &`]: {
+      background: "linear-gradient(180deg, #19D37E 0%, #0CB25F 100%)",
+      boxShadow:
+        "0 8px 0 rgba(0,0,0,.18), inset 0 2px 0 rgba(255,255,255,.55), 0 0 0 3px rgba(25,211,126,.28)",
+      transform: "translateY(-2px)",
+      filter: "none",
+    },
+  },
+});
+
+export const buttonWrong = style({
+  selectors: {
+    [`${revealRoot} &`]: {
+      background: "linear-gradient(180deg, #FF7A7A 0%, #E45050 100%)",
+      boxShadow:
+        "0 8px 0 rgba(0,0,0,.18), inset 0 2px 0 rgba(255,255,255,.35), 0 0 0 3px rgba(228,80,80,.25)",
+      transform: "translateY(-2px)",
+      filter: "none",
+    },
+    // 👇 override the yellow `:checked` skin during reveal
+    [`${revealRoot} ${input}:checked + &`]: {
+      background: "linear-gradient(180deg, #FF7A7A 0%, #E45050 100%)",
+      boxShadow:
+        "0 8px 0 rgba(0,0,0,.18), inset 0 2px 0 rgba(255,255,255,.35), 0 0 0 3px rgba(228,80,80,.25)",
+      transform: "translateY(-2px)",
+      filter: "none",
     },
   },
 });
