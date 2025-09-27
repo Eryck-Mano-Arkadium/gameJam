@@ -79,3 +79,17 @@ export const score = style({
   fontWeight: 900,
   textAlign: "right",
 });
+
+export const subtitle = style({
+  fontSize: 24,
+  fontWeight: 800,
+  color: "#fff",
+  textTransform: "uppercase",
+  marginBottom: 16,
+  background: "url('/assets/lb-tab.png') center / 100% 100% no-repeat",
+  width: '200px',
+  height: '70px',
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+});

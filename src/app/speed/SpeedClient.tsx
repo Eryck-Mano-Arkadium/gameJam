@@ -204,7 +204,6 @@ export default function SpeedClient({
                 onChange={onPick}
                 disabled={false}
                 correct={question.correct}
-                revealCorrectInline={showAnswer}
               />
             </div>
             <Countdown
@@ -216,6 +215,9 @@ export default function SpeedClient({
               variant="timebar"
               fillMode="remaining" // 👈 left orange = time left
             />
+            <div>
+              {showAnswer && <span> Correct Answer: {question.correct}</span>}
+            </div>
           </>
         ) : (
           <div className="card" aria-live="polite" aria-atomic="true">
@@ -234,15 +236,6 @@ export default function SpeedClient({
                 youScore={score}
                 youBestScore={highScore}
               />
-            </div>
-
-            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-              <button className="btn" onClick={reset}>
-                Play again
-              </button>
-              <Link className="btn" href={"/speed/leaderboard" as Route}>
-                Full leaderboard
-              </Link>
             </div>
           </div>
         )}

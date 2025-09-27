@@ -2,13 +2,54 @@
 
 import React from "react";
 import type { DailyRecord } from "@/services/leaderboard/DailyLeaderboardService";
+// ✅ Reuse the Infinity leaderboard styles & assets
+import * as L from "@/components/leaderboard.css";
 
 type Props = {
   date: string; // YYYY-MM-DD
   records: DailyRecord[];
   youName?: string | null;
-  youScore?: number; // today’s score
+  youScore?: number; // today’s score (from DailyService)
 };
+
+// Choose how many rows to show (same as Infinity look)
+const ROW_COUNT = 5;
+
+function avatarFor(rank: number, isYou: boolean) {
+  if (isYou) return "/assets/me-avatar.png";
+  if (rank === 1) return "/assets/1stPlace.png";
+  if (rank === 2) return "/assets/2ndPlace.png";
+  if (rank === 3) return "/assets/3rdPlace.png";
+  return "/assets/normal-avatar.png";
+}
+
+function Row({
+  rank,
+  name,
+  score,
+  isYou,
+}: {
+  rank: number;
+  name: string;
+  score: number;
+  isYou: boolean;
+}) {
+  const rowClass = isYou ? `${L.row} ${L.rowUser}` : L.row;
+  return (
+    <div className={rowClass} role="row">
+      <div className={L.rankCell}>{rank}</div>
+      <img
+        className={L.avatar}
+        src={avatarFor(rank, isYou)}
+        alt={isYou ? "Your avatar" : `${name} avatar`}
+      />
+      <div className={L.name} aria-current={isYou ? "true" : undefined}>
+        {isYou ? `${name} (Me)` : name}
+      </div>
+      <div className={L.score}>{score}</div>
+    </div>
+  );
+}
 
 export default function DailyLeaderboard({
   date,
@@ -18,17 +59,18 @@ export default function DailyLeaderboard({
 }: Props) {
   const youKey = (youName ?? "").trim().toLowerCase();
 
-  const merged = (() => {
+  // If you're not persisted yet, virtually add you so rank shows up.
+  const merged: DailyRecord[] = (() => {
     if (!youKey) return records.slice();
     const present = records.some((r) => r.name.trim().toLowerCase() === youKey);
     if (present) return records.slice();
-    // show your row even if not persisted yet
     return [
       ...records,
       { name: youName!, score: youScore, lastUpdateTs: 0, date },
     ];
   })();
 
+  // Sort same as service: score desc, earlier ts wins ties, name asc
   merged.sort((a, b) => {
     if (a.score !== b.score) return b.score - a.score;
     if (a.lastUpdateTs !== b.lastUpdateTs)
@@ -36,88 +78,55 @@ export default function DailyLeaderboard({
     return a.name.localeCompare(b.name);
   });
 
-  const top10 = merged.slice(0, 10);
-  const rank = youKey
-    ? merged.findIndex((r) => r.name.trim().toLowerCase() === youKey) + 1 ||
-      undefined
-    : undefined;
-  const youInTop10 = youKey
-    ? top10.some((r) => r.name.trim().toLowerCase() === youKey)
-    : false;
+  // Your true rank if present
+  const youIndex = youKey
+    ? merged.findIndex((r) => r.name.trim().toLowerCase() === youKey)
+    : -1;
+  const youRank = youIndex >= 0 ? youIndex + 1 : undefined;
+
+  // Build the display list (Top N). If you're outside Top N, show your row as last.
+  const top = merged.slice(0, ROW_COUNT);
+  let display = top.map((r, i) => ({
+    rank: i + 1,
+    name: r.name,
+    score: r.score,
+    isYou: youKey && r.name.trim().toLowerCase() === youKey,
+  }));
+
+  if (youRank && youRank > ROW_COUNT && youName) {
+    display[display.length - 1] = {
+      rank: youRank,
+      name: youName,
+      score: youScore,
+      isYou: true,
+    };
+  }
 
   return (
-    <section aria-labelledby="daily-lb-title">
-      <h3 id="daily-lb-title">Daily Leaderboard — {date}</h3>
+    <section className={L.wrapper} aria-labelledby="daily-lb-title">
+      <h3 id="speed-lb-title" className={L.title}>
+        Leaderboard
+      </h3>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "3rem 1fr 7rem",
-          gap: 8,
-          maxWidth: 520,
-        }}
-      >
-        <div style={{ fontWeight: 600 }}>#</div>
-        <div style={{ fontWeight: 600 }}>Player</div>
-        <div style={{ fontWeight: 600, textAlign: "right" }}>Score</div>
-
-        {top10.length === 0 && (
-          <>
-            <div>—</div>
-            <div>No scores yet</div>
-            <div style={{ textAlign: "right" }}>—</div>
-          </>
-        )}
-
-        {top10.map((r, i) => {
-          const isYou = youKey && r.name.trim().toLowerCase() === youKey;
-          return (
-            <React.Fragment key={`${r.name}-${i}`}>
-              <div>{i + 1}</div>
-              <div
-                aria-current={isYou ? "true" : undefined}
-                style={isYou ? { fontWeight: 700 } : undefined}
-              >
-                {r.name}
-                {isYou ? " (you)" : ""}
-              </div>
-              <div style={{ textAlign: "right" }}>{r.score}</div>
-            </React.Fragment>
-          );
-        })}
+      <div className={L.subtitle}>
+        Daily
       </div>
 
-      {youName && (
-        <div className="card" style={{ marginTop: 16 }}>
-          <h4>Your stats</h4>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
-              gap: 12,
-              maxWidth: 520,
-            }}
-          >
-            <div>
-              <div style={{ color: "#555" }}>Name</div>
-              <div style={{ fontWeight: 600 }}>{youName}</div>
-            </div>
-            <div>
-              <div style={{ color: "#555" }}>Today’s score</div>
-              <div style={{ fontWeight: 700 }}>{youScore}</div>
-            </div>
-            <div>
-              <div style={{ color: "#555" }}>Position</div>
-              <div style={{ fontWeight: 700 }}>{rank ? `#${rank}` : "—"}</div>
-            </div>
-            <div style={{ gridColumn: "1 / -1", color: "#666", fontSize: 12 }}>
-              {youInTop10
-                ? "You are currently in the Top 10."
-                : "You are outside the Top 10."}
-            </div>
-          </div>
-        </div>
-      )}
+      <div className={L.list} role="table" aria-label="Top players">
+        {display.length === 0 ? (
+          <div className={L.empty}>No scores yet</div>
+        ) : (
+          display.map((row) => (
+            <Row
+              key={`${row.name}-${row.rank}`}
+              rank={row.rank}
+              name={row.name}
+              score={row.score}
+              isYou={row.isYou as boolean}
+            />
+          ))
+        )}
+      </div>
     </section>
   );
 }
