@@ -5,6 +5,7 @@ import { PlayerService } from "@/services/player/PlayerService";
 import { DailyService } from "@/services/daily/DailyService";
 import { useDailyLeaderboard } from "@/hooks/useDailyLeaderboard";
 import DailyLeaderboard from "@/components/DailyLeaderboard";
+import * as S from "../daily.css";
 
 export default function DailyLeaderboardClient() {
   const { date, records } = useDailyLeaderboard();
@@ -20,15 +21,13 @@ export default function DailyLeaderboardClient() {
   }, []);
 
   return (
-    <main className="container" style={{ padding: "48px 20px" }}>
-      <h1>Daily Challenge — Leaderboard</h1>
+    <main className={S.screen}>
       <DailyLeaderboard
         date={date}
         records={records}
         youName={youName}
         youScore={todayScore}
       />
-      {/* No "Play today" button here — daily is one run per day */}
     </main>
   );
 }

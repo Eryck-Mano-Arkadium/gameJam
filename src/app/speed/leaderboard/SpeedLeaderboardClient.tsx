@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { PlayerService } from "@/services/player/PlayerService";
 import { useSpeedLeaderboard } from "@/hooks/useSpeedLeaderboard";
 import SpeedLeaderboard from "@/components/SpeedLeaderboard";
+import * as S from "../speed.css";
 
 export default function SpeedLeaderboardClient() {
   const { records } = useSpeedLeaderboard();
@@ -21,19 +21,13 @@ export default function SpeedLeaderboardClient() {
   }, []);
 
   return (
-    <main className="container" style={{ padding: "48px 20px" }}>
-      <h1>Speed Run — Leaderboard</h1>
+    <main className={S.screen}>
       <SpeedLeaderboard
         records={records}
         youName={youName}
         youScore={run}
         youBestScore={best}
       />
-      <p style={{ marginTop: 16 }}>
-        <Link className="btn" href="/speed">
-          Play
-        </Link>
-      </p>
     </main>
   );
 }

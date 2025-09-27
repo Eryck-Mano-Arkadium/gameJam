@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { PlayerService } from "@/services/player/PlayerService";
 import { navigate } from "@/utils/nav";
+import * as S from "./name.css";
 
 const ps = new PlayerService();
 
@@ -11,19 +12,18 @@ export default function WelcomePage() {
   const router = useRouter();
   const [name, setName] = useState(() => ps.getName() ?? "");
 
-  // If a name is already saved, skip this screen
+  // Load existing name if available, but allow changes
   useEffect(() => {
-    const existing = (ps.getName() || "").trim();
-    if (existing) navigate(router as any, "/modes");
+    const existing = ps.getName();
+    if (existing) setName(existing);
   }, []);
 
   return (
-    <main className="container" style={{ padding: "48px 20px", maxWidth: 640 }}>
-      <h1 style={{ fontSize: 40, marginBottom: 16 }}>Welcome:</h1>
+    <main className={S.wrapper}>
+      <img src="/assets/Logo.png" alt="logo" width={410} height={276} className={S.logo} />
 
       <form
-        className="card"
-        style={{ padding: 20 }}
+        className={S.form}
         onSubmit={(e) => {
           e.preventDefault();
           const n = name.trim();
@@ -32,27 +32,20 @@ export default function WelcomePage() {
           navigate(router as any, "/modes"); // → Page 3
         }}
       >
-        <label htmlFor="name" style={{ display: "block", marginBottom: 6 }}>
-          Your player name
+        <label htmlFor="name" className={S.label}>
+          Enter your name
         </label>
         <input
           id="name"
           value={name}
+          className={S.input}
           onChange={(e) => setName(e.target.value)}
           required
           aria-required="true"
-          style={{
-            width: "100%",
-            padding: 12,
-            border: "1px solid #ccc",
-            borderRadius: 8,
-            fontSize: 18,
-          }}
-          placeholder="Type your name…"
         />
-        <div style={{ marginTop: 12 }}>
-          <button className="btn" type="submit" disabled={!name.trim()}>
-            Save &amp; Play
+        <div>
+          <button className={S.btn} type="submit" disabled={!name.trim()}>
+            OK
           </button>
         </div>
       </form>

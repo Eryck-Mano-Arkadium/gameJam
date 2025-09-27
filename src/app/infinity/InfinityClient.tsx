@@ -14,6 +14,7 @@ import LiveRegion from "@/components/LiveRegion";
 import { QuestionService } from "@/services/questions/QuestionService";
 import { resolveHref } from "@/utils/nav";
 import { PlayerService } from "@/services/player/PlayerService";
+import * as S from "./infinity.css";
 
 const qs = new QuestionService();
 const ps = new PlayerService();
@@ -49,7 +50,6 @@ export default function InfinityClient() {
   // Check for showanswer query parameter
   const showAnswer = searchParams.get("showanswer") === "true";
 
-
   useEffect(() => {
     if (info.phase === "QUESTION" && answer.roundId !== roundId) {
       setAnswer({ roundId });
@@ -63,14 +63,14 @@ export default function InfinityClient() {
       if (answer.roundId === roundId) {
         setFakePlayerCount(0);
       }
-      
+
       // Start the fake count timer
       if (fakeCountInterval.current) {
         clearInterval(fakeCountInterval.current);
       }
-      
+
       fakeCountInterval.current = setInterval(() => {
-        setFakePlayerCount(prev => {
+        setFakePlayerCount((prev) => {
           // Random increment between 3-150 players per second
           const increment = Math.floor(Math.random() * 40) + 3;
           return prev + increment;
@@ -150,84 +150,57 @@ export default function InfinityClient() {
   const needsName = !name;
 
   return (
-    <section className="container">
-      <h1>Infinity Mode</h1>
-      <p>
-        Rounds are synchronized globally. You can join anytime; timers are
-        shared.
-      </p>
+    <section className={S.screen}>
+      <div className={S.container}>
+        {info.phase !== "LEADERBOARD" && (
+          <img src="/assets/infinity-logo.png" alt="logo" className={S.logo} />
+        )}
 
-      {needsName && (
-        <div className="card" role="note" aria-label="Name required">
-          <p>
-            <strong>Tip:</strong> Add or change your name for the leaderboard.
-          </p>
-          <p>
-            <a className="btn" href={resolveHref("/name")}>
-              Insert / Change Name
-            </a>
-          </p>
-        </div>
-      )}
-
-      <div className="row">
-        <div className="card" style={{ flex: 1, minWidth: 320 }}>
-          <h2>Round #{roundId}</h2>
-          <p>
-            <strong>Phase:</strong> {info.phase}
-          </p>
-          <Countdown
-            startTs={info.phaseStartMs}
-            endTs={info.phaseEndMs}
-            nowFn={clock.now}
-            warnAt={5}
-            onWarn={() => audio.tick()}
-            onAnnounce={(text) => setLiveMsg(text)}
-          />
-        </div>
-
-        <div className="card" style={{ flex: 2, minWidth: 320 }}>
-          {info.phase === "QUESTION" && (
-            <>
-              {fakePlayerCount > 0 && (
-                <div style={{ 
-                  marginBottom: 16, 
-                  padding: 8, 
-                  backgroundColor: "#f0f8ff", 
-                  border: "1px solid #0366d6", 
-                  borderRadius: 6,
-                  textAlign: "center",
-                  fontSize: 14,
-                  color: "#0366d6"
-                }}>
-                  <strong>{fakePlayerCount}</strong> players already responded
-                </div>
-              )}
-              <QuestionCard
-                key={`q-${roundId}`}
-                category={question.category}
-                prompt={question.question}
-                options={{
-                  a: question.a,
-                  b: question.b,
-                  c: question.c,
-                  d: question.d,
-                }}
-                value={answer.choice}
-                onChange={onSelect}
-                disabled={disabled}
-                correct={question.correct}
-                revealCorrectInline={showAnswer}
+        <div className={S.questionContainer}>
+          {info.phase !== "LEADERBOARD" && (
+            <div className={S.scoreContainer}>
+              <img
+                src="/assets/speed-score.png"
+                alt="score"
+                className={S.score}
               />
-            </>
+              <span className={S.scoreText}>STREAK: {streak}</span>
+            </div>
           )}
-          {info.phase === "REVEAL" && (
-            <RevealPanel
+          {info.phase === "QUESTION" && (
+            <QuestionCard
+              key={`q-${roundId}`}
               category={question.category}
               prompt={question.question}
+              options={{
+                a: question.a,
+                b: question.b,
+                c: question.c,
+                d: question.d,
+              }}
+              value={answer.choice}
+              onChange={onSelect}
+              disabled={false}
               correct={question.correct}
-              yourChoice={answer.choice}
-              currentStreak={streak}
+            />
+          )}
+
+          {info.phase === "REVEAL" && (
+            <QuestionCard
+              key={`q-${roundId}`}
+              category={question.category}
+              prompt={question.question}
+              options={{
+                a: question.a,
+                b: question.b,
+                c: question.c,
+                d: question.d,
+              }}
+              value={answer.choice}
+              onChange={onSelect}
+              disabled={true}
+              correct={question.correct}
+              reveal={true} // 👈 highlight correct/choice
             />
           )}
           {info.phase === "LEADERBOARD" && (
@@ -240,9 +213,26 @@ export default function InfinityClient() {
             />
           )}
         </div>
+        <div className={S.countdownContainer}>
+          <Countdown
+            startTs={info.phaseStartMs}
+            endTs={info.phaseEndMs}
+            nowFn={clock.now}
+            warnAt={5}
+            onWarn={() => audio.tick()}
+            onAnnounce={(text) => setLiveMsg(text)}
+            variant="timebar"
+            fillMode="remaining"
+          />
+          {fakePlayerCount > 0 && info.phase === "QUESTION" && (
+            <div className={S.fakePlayerCount}>
+              <strong>{fakePlayerCount}</strong> players already answered!
+              {showAnswer && <span> Correct Answer: {question.correct}</span>}
+            </div>
+          )}
+        </div>
+        {/* <LiveRegion message={liveMsg} /> */}
       </div>
-
-      {/* <LiveRegion message={liveMsg} /> */}
     </section>
   );
 }

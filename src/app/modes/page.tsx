@@ -1,55 +1,66 @@
 // src/app/modes/page.tsx
+import * as S from "./modes.css";
 import { resolveHref } from "@/utils/nav";
 
-function Card({
-  title,
-  desc,
-  href,
-}: {
+type Mode = {
   title: string;
-  desc: string;
+  desc?: string;
   href: string;
-}) {
+  iconSrc: string; // PNG path from /public
+  iconAlt: string;
+};
+
+const MODES: Mode[] = [
+  {
+    title: "Daily Challenge",
+    desc: "One shared puzzle per day.",
+    href: "/daily",
+    iconSrc: "/assets/modes/daily.png",
+    iconAlt: "Daily calendar icon",
+  },
+  {
+    title: "Speed Run",
+    desc: "Answer as many as you can before time runs out.",
+    href: "/speed",
+    iconSrc: "/assets/modes/speed.png",
+    iconAlt: "Hourglass icon",
+  },
+  {
+    title: "Infinity",
+    desc: "Join the global loop; synchronized rounds.",
+    href: "/infinity",
+    iconSrc: "/assets/modes/infinity.png",
+    iconAlt: "Infinity symbol",
+  },
+];
+
+function ModeCard({ title, desc, href, iconSrc, iconAlt }: Mode) {
   return (
-    <a
-      href={resolveHref(href)}
-      className="card"
-      style={{ textDecoration: "none", color: "inherit" }}
-    >
-      <h3 style={{ marginBottom: 8 }}>{title}</h3>
-      <p style={{ color: "#444" }}>{desc}</p>
-    </a>
+    <div className={S.card}>
+      <div className={S.iconWrap} aria-hidden="true">
+        <img className={S.iconImg} src={iconSrc} alt="" />
+      </div>
+     
+      <a
+        href={resolveHref(href)}
+        className={S.playBtn}
+        aria-label={`Play ${title}`}
+      >
+        <img className={S.iconImg} src={"/assets/Play_Button.png"} alt="" />
+      </a>
+    </div>
   );
 }
 
 export default function ModesPage() {
   return (
-    <main className="container" style={{ padding: "32px 20px" }}>
-      <h1>Select a mode</h1>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: 16,
-        }}
-      >
-        <Card
-          title="Daily Challenge"
-          desc="One shared puzzle per day. (stub)"
-          href="/daily"
-        />
-        <Card
-          title="Speed Run"
-          desc="Fixed number of questions; go fast. (stub)"
-          href="/speed"
-        />
-        <Card
-          title="Infinity"
-          desc="One global 30s loop anyone can join anytime."
-          href="/infinity"
-        />
-      </div>
+    <main className={S.screen}>
+      <h1 className={S.title}>Select game mode</h1>
+      <section className={S.grid} aria-label="Game modes">
+        {MODES.map((m) => (
+          <ModeCard key={m.title} {...m} />
+        ))}
+      </section>
     </main>
   );
 }

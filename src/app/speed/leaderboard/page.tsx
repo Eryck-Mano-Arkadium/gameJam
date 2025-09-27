@@ -7,7 +7,7 @@ const SpeedLeaderboardClient = dynamic(
   {
     ssr: false,
     loading: () => (
-      <main className="container" style={{ padding: "48px 20px" }}>
+      <main className="container">
         <h1>Speed Run — Leaderboard</h1>
         <p>Loading…</p>
       </main>
