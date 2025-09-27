@@ -1,4 +1,5 @@
 import "@/styles/global.css.ts";
+import "@/styles/fonts.css";
 import type { Metadata } from "next";
 import SettingsMenu from "@/components/SettingsMenu";
 

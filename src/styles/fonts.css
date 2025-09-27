@@ -1,0 +1,23 @@
+@font-face {
+  font-family: 'Cubano';
+  src: url('/fonts/Cubano.ttf') format('truetype');
+  font-display: swap;
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Gothic';
+  src: url('/fonts/GOTHIC.TTF') format('truetype');
+  font-display: swap;
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Gothic';
+  src: url('/fonts/GOTHICB.TTF') format('truetype');
+  font-display: swap;
+  font-weight: bold;
+  font-style: normal;
+}

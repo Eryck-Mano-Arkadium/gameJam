@@ -12,10 +12,10 @@ export default function WelcomePage() {
   const router = useRouter();
   const [name, setName] = useState(() => ps.getName() ?? "");
 
-  // If a name is already saved, skip this screen
+  // Load existing name if available, but allow changes
   useEffect(() => {
-    const existing = (ps.getName() || "").trim(); 
-    if (existing) navigate(router as any, "/modes");
+    const existing = ps.getName();
+    if (existing) setName(existing);
   }, []);
 
   return (

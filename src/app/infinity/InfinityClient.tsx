@@ -164,7 +164,7 @@ export default function InfinityClient() {
                 alt="score"
                 className={S.score}
               />
-              <span className={S.scoreText}>Streak: {streak}</span>
+              <span className={S.scoreText}>STREAK: {streak}</span>
             </div>
           )}
           {info.phase === "QUESTION" && (

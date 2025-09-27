@@ -38,6 +38,7 @@ export const scoreText = style({
   fontSize: 34,
   fontWeight: "bold",
   color: "#fff",
+  fontFamily: "Cubano, Gothic, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji",
 });
 
 export const questionContainer = style({

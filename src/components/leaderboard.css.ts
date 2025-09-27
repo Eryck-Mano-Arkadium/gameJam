@@ -13,6 +13,7 @@ export const title = style({
   color: "#fff",
   textTransform: "uppercase",
   marginBottom: 16,
+  fontFamily: "Cubano, Gothic, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji",
 });
 
 export const list = style({
@@ -92,4 +93,5 @@ export const subtitle = style({
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
+  fontFamily: "Cubano, Gothic, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji",
 });
