@@ -18,7 +18,7 @@ export const container = style({
 });
 
 export const score = style({
-  marginLeft: "25%",
+  marginLeft: "50%",
   transform: "translateX(-50%)",
 });
 
@@ -26,15 +26,24 @@ export const scoreContainer = style({
   position: "relative",
 });
 
-export const scoreText = style({
+export const questionText = style({
   position: "absolute",
-  width: 40,
   top: 12,
-  left: 310,
+  left: 280,
   background: "#f252d8",
   fontSize: 34,
   fontWeight: "bold",
   color: "#fff",
+});
+
+export const scoreText = style({
+  position: "absolute",
+  width: 40,
+  top: 14,
+  right: 245,
+  fontSize: 32,
+  fontWeight: "bold",
+  color: "#FFC64C",
 });
 
 export const questionContainer = style({

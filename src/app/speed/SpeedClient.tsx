@@ -41,6 +41,9 @@ export default function SpeedClient({
     ...DEFAULT_CONFIG,
     ...(config ?? {}),
   } as SpeedrunConfig;
+  const addScore = useCallback((delta: number) => {
+    setScore((s) => Math.max(0, s + delta));
+  }, []);
 
   const [startTs, setStartTs] = useState(() => Date.now());
   const [index, setIndex] = useState(0);
@@ -68,13 +71,12 @@ export default function SpeedClient({
   }, [index]);
 
   // finish when timer ends (no state updates during render)
-  // useEffect(() => {
-  //   const id = setInterval(() => {
-  //     if (!finished && Date.now() >= endTs) setFinished(true);
-  //   }, 100);
-  //   return () => clearInterval(id);
-  // }, [endTs, finished]);
-
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (!finished && Date.now() >= endTs) setFinished(true);
+    }, 100);
+    return () => clearInterval(id);
+  }, [endTs, finished]);
   // Load high score once
   useEffect(() => {
     setHighScore(getHigh());
@@ -106,35 +108,62 @@ export default function SpeedClient({
     (val: "a" | "b" | "c" | "d") => {
       if (finished) return;
       const correct = question.correct;
+
       if (val === correct) {
-        setScore((s) => s + cfg.pointsCorrect);
-        setMessage(`Correct! +${cfg.pointsCorrect} points.`);
+        const applied = cfg.pointsCorrect; // always positive
+        addScore(applied);
+        setMessage(`Correct! +${applied} points.`);
       } else {
-        setScore((s) => s + cfg.pointsWrong);
-        setMessage(`Wrong. -${Math.abs(cfg.pointsWrong)} points.`);
+        // negative delta, but don't go below 0
+        const applied = Math.max(cfg.pointsWrong, -score); // e.g., -20, or -10, or 0
+        addScore(applied);
+        setMessage(`Wrong. ${applied >= 0 ? `+${applied}` : applied} points.`);
       }
+
       setChoice(undefined);
       setIndex((i) => i + 1);
     },
-    [finished, question.correct, cfg.pointsCorrect, cfg.pointsWrong]
+    [
+      finished,
+      question.correct,
+      cfg.pointsCorrect,
+      cfg.pointsWrong,
+      addScore,
+      score,
+    ]
   );
 
   // optional manual submit (if you ever add a button)
   const submitSkip = useCallback(() => {
     if (finished) return;
+
     if (!choice) {
-      setScore((s) => s + cfg.pointsWrong);
-      setMessage(`No answer. -${Math.abs(cfg.pointsWrong)} points.`);
+      const applied = Math.max(cfg.pointsWrong, -score);
+      addScore(applied);
+      setMessage(
+        `No answer. ${applied >= 0 ? `+${applied}` : applied} points.`
+      );
     } else if (choice === question.correct) {
-      setScore((s) => s + cfg.pointsCorrect);
-      setMessage(`Correct! +${cfg.pointsCorrect} points.`);
+      const applied = cfg.pointsCorrect;
+      addScore(applied);
+      setMessage(`Correct! +${applied} points.`);
     } else {
-      setScore((s) => s + cfg.pointsWrong);
-      setMessage(`Wrong. -${Math.abs(cfg.pointsWrong)} points.`);
+      const applied = Math.max(cfg.pointsWrong, -score);
+      addScore(applied);
+      setMessage(`Wrong. ${applied >= 0 ? `+${applied}` : applied} points.`);
     }
+
     setChoice(undefined);
     setIndex((i) => i + 1);
-  }, [choice, finished, question.correct, cfg.pointsCorrect, cfg.pointsWrong]);
+  }, [
+    choice,
+    finished,
+    question.correct,
+    cfg.pointsCorrect,
+    cfg.pointsWrong,
+    addScore,
+    score,
+  ]);
 
   const reset = () => {
     setStartTs(Date.now());
@@ -152,28 +181,15 @@ export default function SpeedClient({
 
         {!finished ? (
           <>
-            {/* <div style={{ marginTop: 12 }}>
-              <p>
-                Score: <strong>{score}</strong> • High score:{" "}
-                <strong>{highScore}</strong> •{" "}
-                <Link
-                  href={"/speed/leaderboard" as Route}
-                  className="btn"
-                  style={{ marginLeft: 8 }}
-                >
-                  View leaderboard
-                </Link>
-              </p>
-            </div> */}
-
             <div className={S.questionContainer}>
               <div className={S.scoreContainer}>
                 <img
-                  src="/assets/speed-score.png"
+                  src="/assets/daily-score.png"
                   alt="score"
                   className={S.score}
                 />
-                <span className={S.scoreText}>{index + 1}</span>
+                <span className={S.questionText}>Question {index + 1}</span>
+                <span className={S.scoreText}>{score}</span>
               </div>
               <QuestionCard
                 category={question.category}
