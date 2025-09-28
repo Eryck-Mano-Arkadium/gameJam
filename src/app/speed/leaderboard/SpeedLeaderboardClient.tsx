@@ -9,14 +9,25 @@ import * as S from "../speed.css";
 export default function SpeedLeaderboardClient() {
   const { records } = useSpeedLeaderboard();
 
-  const [youName, setYouName] = useState("");
-  const [run, setRun] = useState(0);
-  const [best, setBest] = useState(0);
+  const [youName, setYouName] = useState(() =>
+    typeof window === "undefined" ? "" : new PlayerService().getName() ?? ""
+  );
+  const [run, setRun] = useState(() =>
+    typeof window === "undefined"
+      ? 0
+      : Number(sessionStorage.getItem("speedrun:last") ?? "0")
+  );
+  const [best, setBest] = useState(() =>
+    typeof window === "undefined"
+      ? 0
+      : Number(localStorage.getItem("speedrun_highscore") ?? "0")
+  );
 
+  // still keep an effect to catch updates if user reloads storage externally
   useEffect(() => {
     const ps = new PlayerService();
     setYouName(ps.getName() ?? "");
-    setRun(Number(sessionStorage.getItem("speed:last") ?? "0"));
+    setRun(Number(sessionStorage.getItem("speedrun:last") ?? "0"));
     setBest(Number(localStorage.getItem("speedrun_highscore") ?? "0"));
   }, []);
 

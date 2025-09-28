@@ -5,8 +5,8 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Countdown from "@/components/Countdown";
 import QuestionCard from "@/components/QuestionCard";
-import LiveRegion from "@/components/LiveRegion";
 import SpeedLeaderboard from "@/components/SpeedLeaderboard";
+import ModeIntro from "@/components/ModeIntro";
 import { QuestionService } from "@/services/questions/QuestionService";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useSpeedLeaderboard } from "@/hooks/useSpeedLeaderboard";
@@ -20,7 +20,6 @@ type SpeedrunConfig = {
   pointsCorrect: number;
   pointsWrong: number;
 };
-
 const DEFAULT_CONFIG: SpeedrunConfig = {
   durationMs: 40_000,
   pointsCorrect: 50,
@@ -42,11 +41,29 @@ export default function SpeedClient({
     ...DEFAULT_CONFIG,
     ...(config ?? {}),
   } as SpeedrunConfig;
-  const addScore = useCallback((delta: number) => {
-    setScore((s) => Math.max(0, s + delta));
+
+  // ---- Intro gate -----------------------------------------------------------
+  const [showIntro, setShowIntro] = useState<boolean | null>(null); // null = unresolved
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const needIntro = localStorage.getItem("intro:seen:speed") !== "1";
+    setShowIntro(needIntro);
+    if (!needIntro) {
+      setStartTs(Date.now()); // <-- start immediately if no intro needed
+    }
   }, []);
 
-  const [startTs, setStartTs] = useState(() => Date.now());
+  const handleIntroClose = () => {
+    try {
+      localStorage.setItem("intro:seen:speed", "1");
+    } catch {}
+    setShowIntro(false);
+    setStartTs(Date.now()); // <-- start when user closes intro
+  };
+
+  // ---- Game state -----------------------------------------------------------
+  const [startTs, setStartTs] = useState<number | null>(null); // ⟵ null until intro closes
+
   const [index, setIndex] = useState(0);
   const [choice, setChoice] = useState<"a" | "b" | "c" | "d" | undefined>(
     undefined
@@ -55,15 +72,27 @@ export default function SpeedClient({
   const [message, setMessage] = useState("");
   const [finished, setFinished] = useState(false);
 
-  // query param
-  const showAnswer = searchParams.get("showanswer") === "true";
+  // Finish when timer ends (only after intro closed / startTs set)
+  useEffect(() => {
+    if (startTs == null) return;
+    const id = setInterval(() => {
+      if (!finished && Date.now() >= startTs + cfg.durationMs)
+        setFinished(true);
+    }, 100);
+    return () => clearInterval(id);
+  }, [startTs, cfg.durationMs, finished]);
 
-  // name + high score
+  const addScore = useCallback(
+    (delta: number) => setScore((s) => Math.max(0, s + delta)),
+    []
+  );
+
+  const showAnswer = searchParams.get("showanswer") === "true";
   const [getHigh, setHigh] = useLocalStorage<number>("speedrun_highscore", 0);
   const [highScore, setHighScore] = useState<number>(0);
   const name = ps.getName();
 
-  const endTs = startTs + cfg.durationMs;
+  const endTs = startTs ? startTs + cfg.durationMs : 0;
   const nowFn = useCallback(() => Date.now(), []);
   const question = useMemo(() => {
     const all = svc.all();
@@ -71,19 +100,16 @@ export default function SpeedClient({
     return all[safeIndex];
   }, [index]);
 
-  // finish when timer ends (no state updates during render)
+  // Finish when timer ends (only after intro closed)
   useEffect(() => {
+    if (!startTs) return;
     const id = setInterval(() => {
       if (!finished && Date.now() >= endTs) setFinished(true);
     }, 100);
     return () => clearInterval(id);
-  }, [endTs, finished]);
-  // Load high score once
-  useEffect(() => {
-    setHighScore(getHigh());
-  }, []);
+  }, [startTs, endTs, finished]);
 
-  // Update high score if surpassed
+  useEffect(() => setHighScore(getHigh()), []); // load high
   useEffect(() => {
     if (score > highScore) {
       setHighScore(score);
@@ -91,43 +117,39 @@ export default function SpeedClient({
     }
   }, [score, highScore, setHigh]);
 
-  // When finished, submit to global LB and redirect to /speed/leaderboard
   const pushedRef = useRef(false);
   useEffect(() => {
     if (!finished || pushedRef.current) return;
     pushedRef.current = true;
-
-    if (name) submit(name, score); // save to global LB
-
+    if (name) submit(name, score);
     try {
-      sessionStorage.setItem("speedrun:last", String(score)); // show on LB page
+      sessionStorage.setItem("speedrun:last", String(score));
     } catch {}
     router.push("/speed/leaderboard");
   }, [finished, name, score, submit, router]);
 
+  // onPick must also require startTs
   const onPick = useCallback(
     (val: "a" | "b" | "c" | "d") => {
-      if (finished) return;
+      if (finished || startTs == null) return; // <-- guard
       const correct = question.correct;
-
       if (val === correct) {
-        const applied = cfg.pointsCorrect; // always positive
+        const applied = cfg.pointsCorrect;
         addScore(applied);
         setMessage(`Correct! +${applied} points.`);
         audioService.playCorrect();
       } else {
-        // negative delta, but don't go below 0
-        const applied = Math.max(cfg.pointsWrong, -score); // e.g., -20, or -10, or 0
+        const applied = Math.max(cfg.pointsWrong, -score);
         addScore(applied);
         setMessage(`Wrong. ${applied >= 0 ? `+${applied}` : applied} points.`);
         audioService.playWrong();
       }
-
       setChoice(undefined);
       setIndex((i) => i + 1);
     },
     [
       finished,
+      startTs,
       question.correct,
       cfg.pointsCorrect,
       cfg.pointsWrong,
@@ -136,51 +158,24 @@ export default function SpeedClient({
     ]
   );
 
-  // optional manual submit (if you ever add a button)
-  const submitSkip = useCallback(() => {
-    if (finished) return;
-
-    if (!choice) {
-      const applied = Math.max(cfg.pointsWrong, -score);
-      addScore(applied);
-      setMessage(
-        `No answer. ${applied >= 0 ? `+${applied}` : applied} points.`
-      );
-    } else if (choice === question.correct) {
-      const applied = cfg.pointsCorrect;
-      addScore(applied);
-      setMessage(`Correct! +${applied} points.`);
-    } else {
-      const applied = Math.max(cfg.pointsWrong, -score);
-      addScore(applied);
-      setMessage(`Wrong. ${applied >= 0 ? `+${applied}` : applied} points.`);
-    }
-
-    setChoice(undefined);
-    setIndex((i) => i + 1);
-  }, [
-    choice,
-    finished,
-    question.correct,
-    cfg.pointsCorrect,
-    cfg.pointsWrong,
-    addScore,
-    score,
-  ]);
-
+  // Reset
   const reset = () => {
-    setStartTs(Date.now());
     setIndex(0);
     setChoice(undefined);
     setScore(0);
     setMessage("");
     setFinished(false);
+    setStartTs(Date.now());
   };
 
+  // ---- UI -------------------------------------------------------------------
   return (
     <section className={S.screen}>
       <div className={S.container}>
         <img src="/assets/speed-logo.png" alt="logo" className={S.logo} />
+
+        {/* Intro modal (blocks until dismissed) */}
+        {showIntro && <ModeIntro mode="speed" onClose={handleIntroClose} />}
 
         {!finished ? (
           <>
@@ -194,33 +189,38 @@ export default function SpeedClient({
                 <span className={S.questionText}>Question {index + 1}</span>
                 <span className={S.scoreText}>{score}</span>
               </div>
-              <QuestionCard
-                category={question.category}
-                prompt={question.question}
-                options={{
-                  a: question.a,
-                  b: question.b,
-                  c: question.c,
-                  d: question.d,
-                }}
-                value={choice}
-                onChange={onPick}
-                disabled={false}
-                correct={question.correct}
+
+              {/* Hide questions until intro closed */}
+              {startTs !== null && (
+                <QuestionCard
+                  category={question.category}
+                  prompt={question.question}
+                  options={{
+                    a: question.a,
+                    b: question.b,
+                    c: question.c,
+                    d: question.d,
+                  }}
+                  value={choice}
+                  onChange={onPick}
+                  disabled={false}
+                  correct={question.correct}
+                />
+              )}
+            </div>
+
+            {/* Hide countdown until intro closed */}
+            {!showIntro && (
+              <Countdown
+                startTs={startTs ?? 0}
+                endTs={endTs}
+                nowFn={nowFn}
+                warnAt={5}
+                onAnnounce={setMessage}
+                variant="timebar"
+                fillMode="remaining"
               />
-            </div>
-            <Countdown
-              startTs={startTs}
-              endTs={endTs}
-              nowFn={nowFn}
-              warnAt={5}
-              onAnnounce={setMessage}
-              variant="timebar"
-              fillMode="remaining" // 👈 left orange = time left
-            />
-            <div>
-              {showAnswer && <span> Correct Answer: {question.correct}</span>}
-            </div>
+            )}
           </>
         ) : (
           <div className="card" aria-live="polite" aria-atomic="true">
@@ -231,7 +231,6 @@ export default function SpeedClient({
             <p>
               Personal best: <strong>{highScore}</strong>
             </p>
-
             <div style={{ marginTop: 12 }}>
               <SpeedLeaderboard
                 records={records}
@@ -239,6 +238,14 @@ export default function SpeedClient({
                 youScore={score}
                 youBestScore={highScore}
               />
+            </div>
+            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+              <button className="btn" onClick={reset}>
+                Play again
+              </button>
+              <Link className="btn" href={"/speed/leaderboard" as Route}>
+                Full leaderboard
+              </Link>
             </div>
           </div>
         )}

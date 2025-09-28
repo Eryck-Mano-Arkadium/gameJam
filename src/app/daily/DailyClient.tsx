@@ -3,9 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import QuestionCard from "@/components/QuestionCard";
-// import LiveRegion from "@/components/LiveRegion"; // optional
 import { DailyService } from "@/services/daily/DailyService";
-import { resolveHref } from "@/utils/nav";
 import {
   DEFAULT_SCORE,
   scoreForElapsed,
@@ -13,9 +11,9 @@ import {
 } from "@/services/daily/scoring";
 import { PlayerService } from "@/services/player/PlayerService";
 import { useDailyLeaderboard } from "@/hooks/useDailyLeaderboard";
-import DailyLeaderboard from "@/components/DailyLeaderboard";
 import * as S from "./daily.css";
 import { audioService } from "@/services/audio/AudioService";
+import ModeIntro from "@/components/ModeIntro";
 
 const svc = new DailyService();
 const ps = new PlayerService();
@@ -57,6 +55,18 @@ export default function DailyClient({
   const showAnswer = searchParams.get("showanswer") === "true";
   const { date, records, submit } = useDailyLeaderboard(); // today
   const name = ps.getName();
+
+  const [showIntro, setShowIntro] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setShowIntro(localStorage.getItem("intro:seen:daily") !== "1");
+  }, []);
+  const handleIntroClose = () => {
+    try {
+      localStorage.setItem("intro:seen:daily", "1");
+    } catch {}
+    setShowIntro(false);
+  };
 
   // On mount: detect if the user already played, and redirect to leaderboard
   useEffect(() => {
@@ -156,33 +166,39 @@ export default function DailyClient({
   // Normal play UI
   return (
     <section className={S.screen}>
-      <div className={S.container}>
-        <img src="/assets/daily-logo.png" alt="logo" className={S.logo} />
+      {showIntro && <ModeIntro mode="daily" onClose={handleIntroClose} />}
+      {!showIntro && (
+        <div className={S.container}>
+          <img src="/assets/daily-logo.png" alt="logo" className={S.logo} />
 
-        <div className={S.questionContainer}>
-          <div className={S.scoreContainer}>
-            <img
-              src="/assets/daily-score.png"
-              alt="score"
-              className={S.score}
-            />
-              <span className={S.questionText}> {idx + 1} / {questions.length} Question </span>
-              <span className={S.scoreText}>{score}</span> 
-          </div>
-          <div className="card" style={{ flex: 2, minWidth: 320 }}>
-            <QuestionCard
-              category={q.category}
-              prompt={q.question}
-              options={{ a: q.a, b: q.b, c: q.c, d: q.d }}
-              value={choice}
-              onChange={onPick}
-              disabled={false}
-              correct={q.correct}
-              revealCorrectInline={showAnswer}
-            />
+          <div className={S.questionContainer}>
+            <div className={S.scoreContainer}>
+              <img
+                src="/assets/daily-score.png"
+                alt="score"
+                className={S.score}
+              />
+              <span className={S.questionText}>
+                {" "}
+                {idx + 1} / {questions.length} Question{" "}
+              </span>
+              <span className={S.scoreText}>{score}</span>
+            </div>
+            <div className="card" style={{ flex: 2, minWidth: 320 }}>
+              <QuestionCard
+                category={q.category}
+                prompt={q.question}
+                options={{ a: q.a, b: q.b, c: q.c, d: q.d }}
+                value={choice}
+                onChange={onPick}
+                disabled={false}
+                correct={q.correct}
+                revealCorrectInline={showAnswer}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
       {/* <LiveRegion message={message} /> */}
     </section>
   );

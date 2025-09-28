@@ -8,13 +8,11 @@ import { audioService } from "@/services/audio/AudioService";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
 import Countdown from "@/components/Countdown";
 import QuestionCard from "@/components/QuestionCard";
-import RevealPanel from "@/components/RevealPanel";
 import Leaderboard from "@/components/Leaderboard";
-import LiveRegion from "@/components/LiveRegion";
 import { QuestionService } from "@/services/questions/QuestionService";
-import { resolveHref } from "@/utils/nav";
 import { PlayerService } from "@/services/player/PlayerService";
 import * as S from "./infinity.css";
+import ModeIntro from "@/components/ModeIntro";
 
 const qs = new QuestionService();
 const ps = new PlayerService();
@@ -153,9 +151,22 @@ export default function InfinityClient() {
   const disabled = info.phase !== "QUESTION";
   const needsName = !name;
 
+  const [showIntro, setShowIntro] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setShowIntro(localStorage.getItem("intro:seen:infinity") !== "1");
+  }, []);
+  const closeIntro = () => {
+    try {
+      localStorage.setItem("intro:seen:infinity", "1");
+    } catch {}
+    setShowIntro(false);
+  };
+
   return (
     <section className={S.screen}>
       <div className={S.container}>
+        {showIntro && <ModeIntro mode="infinity" onClose={closeIntro} />}
         {info.phase !== "LEADERBOARD" && (
           <img src="/assets/infinity-logo.png" alt="logo" className={S.logo} />
         )}
@@ -234,7 +245,6 @@ export default function InfinityClient() {
             </div>
           )}
         </div>
-        {/* <LiveRegion message={liveMsg} /> */}
       </div>
     </section>
   );

@@ -1,4 +1,5 @@
 // src/app/modes/page.tsx
+import NavLink from "@/components/NavLink";
 import * as S from "./modes.css";
 import { resolveHref } from "@/utils/nav";
 
@@ -40,14 +41,10 @@ function ModeCard({ title, desc, href, iconSrc, iconAlt }: Mode) {
       <div className={S.iconWrap} aria-hidden="true">
         <img className={S.iconImg} src={iconSrc} alt="" />
       </div>
-     
-      <a
-        href={resolveHref(href)}
-        className={S.playBtn}
-        aria-label={`Play ${title}`}
-      >
-        <img className={S.iconImg} src={"/assets/Play_Button.png"} alt="" />
-      </a>
+
+      <NavLink to={href} className={S.playBtn} aria-label={`Play ${title}`}>
+        <img className={S.iconImg} src="/assets/Play_Button.png" alt="" />
+      </NavLink>
     </div>
   );
 }

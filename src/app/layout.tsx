@@ -1,3 +1,4 @@
+// src/app/layout.tsx
 import "@/styles/global.css.ts";
 import "@/styles/fonts.css";
 import type { Metadata } from "next";
@@ -9,29 +10,31 @@ export const metadata: Metadata = {
   description: "A synchronized trivia MVP.",
 };
 
+// ✅ HOIST THIS (do NOT put dynamic() inside the component)
+const MusicPlayer = dynamic(() => import("@/components/MusicPlayer"), {
+  ssr: false,
+});
+
+// ✅ keep a stable object (no re-creating every render)
+const TRACKS = {
+  menu: "/audio/menu.mp3",
+  daily: "/audio/menu.mp3",
+  infinity: "/audio/menu.mp3",
+  speed: "/audio/speed.mp3",
+  fallback: "/audio/menu.mp3",
+} as const;
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const MusicPlayer = dynamic(() => import("@/components/MusicPlayer"), {
-    ssr: false,
-  });
   return (
     <html lang="en">
       <body>
         {children}
         <SettingsMenu />
-        {/* Provide track URLs after you add them under public/ */}
-        <MusicPlayer
-          tracks={{
-            menu: "/audio/menu.mp3",
-            daily: "/audio/menu.mp3",
-            speed: "/audio/speed.mp3",
-            infinity: "/audio/menu.mp3",
-            fallback: "/audio/menu.mp3",
-          }}
-        />
+        <MusicPlayer tracks={TRACKS} />
       </body>
     </html>
   );

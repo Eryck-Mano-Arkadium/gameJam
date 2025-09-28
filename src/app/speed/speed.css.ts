@@ -11,6 +11,7 @@ export const screen = style({
 export const logo = style({});
 
 export const container = style({
+  position: "relative",
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
