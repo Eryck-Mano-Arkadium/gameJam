@@ -29,7 +29,7 @@ export default function WelcomePage() {
           const n = name.trim();
           if (!n) return;
           ps.setName(n);
-          navigate(router as any, "/modes"); // → Page 3
+          navigate(router as any, "/modes");
         }}
       >
         <label htmlFor="name" className={S.label}>
