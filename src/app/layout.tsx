@@ -4,6 +4,7 @@ import "@/styles/fonts.css";
 import type { Metadata } from "next";
 import SettingsMenu from "@/components/SettingsMenu";
 import dynamic from "next/dynamic";
+import BackFab from "@/components/returnToModes";
 
 export const metadata: Metadata = {
   title: "Streak Trivia",
@@ -34,6 +35,7 @@ export default function RootLayout({
       <body>
         {children}
         <SettingsMenu />
+        <BackFab />
         <MusicPlayer tracks={TRACKS} />
       </body>
     </html>
